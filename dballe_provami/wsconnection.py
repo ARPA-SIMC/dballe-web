@@ -1,10 +1,8 @@
-from collections import defaultdict
 from sockjs.tornado import SockJSRouter, SockJSConnection
 import asyncio
-import tornado.ioloop
-import time
 import json
 import logging
+
 
 class Connection(SockJSConnection):
     """
@@ -14,17 +12,17 @@ class Connection(SockJSConnection):
     hub = None
 
     def on_open(self, info):
-        #self.log.info("on_open %s %s", self, info.ip)
+        # self.log.info("on_open %s %s", self, info.ip)
         self.hub._on_open(self, info)
 
     def on_close(self):
-        #self.log.info("on_close %s", self)
+        # self.log.info("on_close %s", self)
         self.hub._on_close(self)
 
     def on_message(self, message: str):
-        #self.log.info("on_message %s %s", self, message)
+        # self.log.info("on_message %s %s", self, message)
         try:
-            payload = json.loads(message);
+            payload = json.loads(message)
         except json.JSONDecodeError:
             self.log.warn("%s: client sent malformed JSON: %r", self, message)
         else:
@@ -76,7 +74,6 @@ class Hub:
 
     def _on_client_message(self, conn: Connection, payload: dict):
         self.log.debug("On client message %r: %r", conn, payload)
-        futures = []
         for filter, callback in self.server_subscriptions:
             if filter.items() < payload.items():
                 f = callback(conn, payload)
@@ -87,4 +84,3 @@ class Hub:
 
     def subscribe(self, filter, callback):
         self.server_subscriptions.append((filter, callback))
-

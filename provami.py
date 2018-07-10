@@ -9,6 +9,7 @@ from tornado.platform.asyncio import AsyncIOMainLoop
 import asyncio
 AsyncIOMainLoop().install()
 
+
 class Provami:
     def __init__(self):
         self.db_url = options.db

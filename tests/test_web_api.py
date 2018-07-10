@@ -1,11 +1,10 @@
-import tornado.testing
-import unittest
 from dballe_provami.webapi import WebAPI
 from dballe_provami.session import Session
 import dballe
 import datetime
 from dballe_provami.unittest import async_test, AsyncTestCase
 from unittest import mock
+
 
 class TestWebAPIMixin:
     def setUp(self):
@@ -20,13 +19,13 @@ class TestPing(TestWebAPIMixin, AsyncTestCase):
     async def test_ping(self):
         with mock.patch("time.time", return_value=100):
             res = await self.api("ping")
-            self.assertEqual(res, { "time": 100, "initializing": True, "pong": True })
+            self.assertEqual(res, {"time": 100, "initializing": True, "pong": True})
 
     @async_test
     async def test_async_ping(self):
         with mock.patch("time.time", return_value=100):
             res = await self.api("ping")
-            self.assertEqual(res, { "time": 100, "initializing": True, "pong": True })
+            self.assertEqual(res, {"time": 100, "initializing": True, "pong": True})
 
 
 class TestEmpty(TestWebAPIMixin, AsyncTestCase):
@@ -34,7 +33,8 @@ class TestEmpty(TestWebAPIMixin, AsyncTestCase):
     async def test_not_initialized(self):
         with mock.patch("time.time", return_value=100):
             res = await self.api("get_filter_stats")
-            self.assertEqual(res, { "time": 100,
+            self.assertEqual(res, {
+                "time": 100,
                 'available': {'stations': [], 'level': [], 'rep_memo': [], 'trange': [], 'var': []},
                 'current': {'ana_id': None, 'datemax': None, 'datemin': None, 'level': None, 'rep_memo': None, 'trange': None, 'var': None},
                 'initializing': True,
@@ -45,7 +45,8 @@ class TestEmpty(TestWebAPIMixin, AsyncTestCase):
         await self.session.refresh_filter()
         with mock.patch("time.time", return_value=100):
             res = await self.api("get_filter_stats")
-            self.assertEqual(res, { "time": 100,
+            self.assertEqual(res, {
+                "time": 100,
                 'available': {'stations': [], 'level': [], 'rep_memo': [], 'trange': [], 'var': []},
                 'current': {'ana_id': None, 'datemax': None, 'datemin': None, 'level': None, 'rep_memo': None, 'trange': None, 'var': None},
             })
@@ -55,7 +56,7 @@ class TestEmpty(TestWebAPIMixin, AsyncTestCase):
         await self.session.refresh_filter()
         with mock.patch("time.time", return_value=100):
             res = await self.api("get_data")
-            self.assertEqual(res, { "time": 100, "rows": [] })
+            self.assertEqual(res, {"time": 100, "rows": []})
 
 
 class TestBasic(TestWebAPIMixin, AsyncTestCase):
@@ -88,17 +89,18 @@ class TestBasic(TestWebAPIMixin, AsyncTestCase):
         with mock.patch("time.time", return_value=100):
             res = await self.api("get_filter_stats")
             self.maxDiff = None
-            self.assertEqual(res, { "time": 100,
+            self.assertEqual(res, {
+                "time": 100,
                 "available": {
                     'stations': [
-                        ('synop', 1, 12.3456, 76.5432, None),
-                        ('temp', 2, 12.3456, 76.5432, None)],
+                        ('synop', 12.3456, 76.5432, None),
+                        ('temp', 12.3456, 76.5432, None)],
                     'level': [((10, 11, 15, 22), 'Layer from [10 11] to [15 22]')],
                     'trange': [((20, 111, 222), '20 111 222')],
                     'rep_memo': ['synop', 'temp'],
                     'var': ['B01011', 'B01012'],
-                    #'datemax': '1945-04-25 08:00:00',
-                    #'datemin': '1945-04-25 08:00:00',
+                    # 'datemax': '1945-04-25 08:00:00',
+                    # 'datemin': '1945-04-25 08:00:00',
                 },
                 "current": {
                     'ana_id': None,
@@ -117,7 +119,8 @@ class TestBasic(TestWebAPIMixin, AsyncTestCase):
         with mock.patch("time.time", return_value=100):
             res = await self.api("get_data")
             self.maxDiff = None
-            self.assertEqual(res, { "time": 100,
+            self.assertEqual(res, {
+                "time": 100,
                 "rows": [
                     ['synop', 1, 'B01011', (10, 11, 15, 22), (20, 111, 222), '1945-04-25 08:00:00', 'Hey Hey!!'],
                     ['synop', 1, 'B01012', (10, 11, 15, 22), (20, 111, 222), '1945-04-25 08:00:00', 500],

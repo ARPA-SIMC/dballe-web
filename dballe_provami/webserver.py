@@ -7,10 +7,10 @@ from .wsconnection import Hub
 from .webapi import WebAPI, WebAPIError
 from .session import Session
 import asyncio
-import dballe
 import logging
 
 log = logging.getLogger(__name__)
+
 
 class HomeHandler(tornado.web.RequestHandler):
     def get(self):
@@ -89,8 +89,8 @@ class Application(tornado.web.Application):
         # FIXME: disable in production
         settings.setdefault("compiled_template_cache", False)
         settings.setdefault("debug", True)
-        #settings.setdefault("cookie_secret", "random string")
-        #settings.setdefault("xsrf_cookies", True)
+        # settings.setdefault("cookie_secret", "random string")
+        # settings.setdefault("xsrf_cookies", True)
 
         super().__init__(urls, **settings)
 

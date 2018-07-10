@@ -1,9 +1,6 @@
 import time
 import logging
 import asyncio
-import csv
-import dballe
-import io
 
 log = logging.getLogger(__name__)
 
@@ -29,11 +26,11 @@ class WebAPI:
         log.debug("API call %s %r", function, kw)
         if function is None:
             log.debug("API call %s %s: function is missing", function, kw)
-            raise gen.Return(None)
+            return None
         f = getattr(self, "do_" + function)
         if f is None:
             log.debug("API call %s %s: function not found", function, kw)
-            raise gen.Return(None)
+            return None
         if asyncio.iscoroutinefunction(f):
             res = await f(**kw)
         else:
