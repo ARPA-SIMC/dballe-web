@@ -87,7 +87,6 @@ class FilterFieldStation extends FilterField
     update_explorer(explorer)
     {
         this.map.update_explorer(explorer);
-        // TODO this.filter = explorer.filter;
     }
 }
 
@@ -125,7 +124,6 @@ class FilterFieldChoices extends FilterField
     {
         // Only one available option, mark it as hardcoded
         value = this._get_option(value);
-        this.value = {};
         this.remove.hide();
         this.row.find("td.value span.value").text(value[1]).show();
         this.field.hide();
@@ -134,7 +132,6 @@ class FilterFieldChoices extends FilterField
     _set_multi(options)
     {
         // Multiple available options
-        this.value = {};
 
         // Fill the <option> list in the <select> field
         this.field.empty();
@@ -155,8 +152,6 @@ class FilterFieldChoices extends FilterField
     {
         // Chosen: show the choice
         value = this._get_option(value);
-        this.value = {};
-        this.value[this.name] = value[0];
         this.remove.show();
         this.row.find("td.value span.value").text(value[1]).show();
         this.field.hide();
@@ -164,7 +159,8 @@ class FilterFieldChoices extends FilterField
 
     update_explorer(explorer)
     {
-        let current = explorer.filter[this.name];
+        let server = explorer.filter[this.name];
+        let current = this.value == null ? server : this.value[this.name];
         let options = explorer[this.name];
         if (current == null)
         {
