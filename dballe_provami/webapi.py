@@ -56,17 +56,6 @@ class WebAPI:
             "explorer": await self.session.init(),
         }
 
-    def do_get_filter_stats(self, **kw):
-        return {
-            "current": self.session.filter.to_dict(),
-            "available": self.session.explorer_to_dict(),
-        }
-
-    def do_get_stations(self, **kw):
-        return {
-            "stations": self.session.explorer.all_stations,
-        }
-
     async def do_get_data(self, **kw):
         return {
             "rows": await self.session.get_data(),

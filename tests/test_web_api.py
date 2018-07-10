@@ -30,28 +30,6 @@ class TestPing(TestWebAPIMixin, AsyncTestCase):
 
 class TestEmpty(TestWebAPIMixin, AsyncTestCase):
     @async_test
-    async def test_not_initialized(self):
-        with mock.patch("time.time", return_value=100):
-            res = await self.api("get_filter_stats")
-            self.assertEqual(res, {
-                "time": 100,
-                'available': {'stations': [], 'level': [], 'rep_memo': [], 'trange': [], 'var': []},
-                'current': {'ana_id': None, 'datemax': None, 'datemin': None, 'level': None, 'rep_memo': None, 'trange': None, 'var': None},
-                'initializing': True,
-            })
-
-    @async_test
-    async def test_get_filter_stats(self):
-        await self.session.refresh_filter()
-        with mock.patch("time.time", return_value=100):
-            res = await self.api("get_filter_stats")
-            self.assertEqual(res, {
-                "time": 100,
-                'available': {'stations': [], 'level': [], 'rep_memo': [], 'trange': [], 'var': []},
-                'current': {'ana_id': None, 'datemax': None, 'datemin': None, 'level': None, 'rep_memo': None, 'trange': None, 'var': None},
-            })
-
-    @async_test
     async def test_get_data(self):
         await self.session.refresh_filter()
         with mock.patch("time.time", return_value=100):
@@ -62,25 +40,15 @@ class TestEmpty(TestWebAPIMixin, AsyncTestCase):
 class TestInit(TestWebAPIMixin, AsyncTestCase):
     @async_test
     async def test_not_initialized(self):
-        with mock.patch("time.time", return_value=100):
-            res = await self.api("get_filter_stats")
-            self.assertEqual(res, {
-                "time": 100,
-                'available': {'stations': [], 'level': [], 'rep_memo': [], 'trange': [], 'var': []},
-                'current': {'ana_id': None, 'datemax': None, 'datemin': None, 'level': None, 'rep_memo': None, 'trange': None, 'var': None},
-                'initializing': True,
-            })
-
         with mock.patch("time.time", return_value=150):
             res = await(self.api("init"))
-            self.assertEqual(res, {"time": 150})
-
-        with mock.patch("time.time", return_value=200):
-            res = await self.api("get_filter_stats")
             self.assertEqual(res, {
-                "time": 200,
-                'available': {'stations': [], 'level': [], 'rep_memo': [], 'trange': [], 'var': []},
-                'current': {'ana_id': None, 'datemax': None, 'datemin': None, 'level': None, 'rep_memo': None, 'trange': None, 'var': None},
+                "time": 150,
+                'explorer': {
+                    'filter': {'ana_id': None, 'datemax': None, 'datemin': None, 'level': None, 'rep_memo': None, 'trange': None, 'var': None},
+                    'initialized': True,
+                    'stations': [], 'stations_disabled': [], 'level': [], 'rep_memo': [], 'trange': [], 'var': [],
+                },
             })
 
 
@@ -109,32 +77,33 @@ class TestBasic(TestWebAPIMixin, AsyncTestCase):
         self.session.db.insert_data(self.data, False, True)
 
     @async_test
-    async def test_get_filter_stats(self):
-        await self.session.refresh_filter()
+    async def test_init(self):
         with mock.patch("time.time", return_value=100):
-            res = await self.api("get_filter_stats")
+            res = await self.api("init")
             self.maxDiff = None
             self.assertEqual(res, {
                 "time": 100,
-                "available": {
+                "explorer": {
+                    "filter": {
+                        'ana_id': None,
+                        'datemax': None,
+                        'datemin': None,
+                        'level': None,
+                        'rep_memo': None,
+                        'trange': None,
+                        'var': None
+                    },
+                    'initialized': True,
                     'stations': [
                         ('synop', 12.3456, 76.5432, None),
                         ('temp', 12.3456, 76.5432, None)],
+                    'stations_disabled': [],
                     'level': [((10, 11, 15, 22), 'Layer from [10 11] to [15 22]')],
                     'trange': [((20, 111, 222), '20 111 222')],
                     'rep_memo': ['synop', 'temp'],
                     'var': ['B01011', 'B01012'],
                     # 'datemax': '1945-04-25 08:00:00',
                     # 'datemin': '1945-04-25 08:00:00',
-                },
-                "current": {
-                    'ana_id': None,
-                    'datemax': None,
-                    'datemin': None,
-                    'level': None,
-                    'rep_memo': None,
-                    'trange': None,
-                    'var': None
                 },
             })
 

@@ -75,16 +75,8 @@ class Server
         return await this._get("init", {});
     }
 
-    async get_filter_stats() {
-        return await this._get("get_filter_stats", {});
-    }
-
     async get_data() {
         return await this._get("get_data", {});
-    }
-
-    async get_stations() {
-        return await this._get("get_stations", {});
     }
 
     async set_filter(filter) {

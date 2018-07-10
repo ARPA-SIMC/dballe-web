@@ -70,9 +70,7 @@ class Application(tornado.web.Application):
             url(r"/api/1.0/ping", RestGET, kwargs={"function": "ping"}, name="api1.0_ping"),
             url(r"/api/1.0/async_ping", RestGET, kwargs={"function": "async_ping"}, name="api1.0_async_ping"),
             url(r"/api/1.0/init", RestGET, kwargs={"function": "init"}, name="api1.0_init"),
-            url(r"/api/1.0/get_filter_stats", RestGET, kwargs={"function": "get_filter_stats"}, name="api1.0_get_filter_stats"),
             url(r"/api/1.0/get_data", RestGET, kwargs={"function": "get_data"}, name="api1.0_get_data"),
-            url(r"/api/1.0/get_stations", RestGET, kwargs={"function": "get_stations"}, name="api1.0_get_stations"),
             url(r"/api/1.0/set_filter", RestPOST, kwargs={"function": "set_filter"}, name="api1.0_set_filter"),
         ]
 
