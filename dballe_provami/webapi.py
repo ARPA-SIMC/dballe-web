@@ -51,6 +51,10 @@ class WebAPI:
             "pong": True,
         }
 
+    async def do_init(self, **kw):
+        await self.session.init()
+        return {}
+
     def do_get_filter_stats(self, **kw):
         return {
             "current": self.session.filter.to_dict(),

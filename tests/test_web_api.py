@@ -59,6 +59,31 @@ class TestEmpty(TestWebAPIMixin, AsyncTestCase):
             self.assertEqual(res, {"time": 100, "rows": []})
 
 
+class TestInit(TestWebAPIMixin, AsyncTestCase):
+    @async_test
+    async def test_not_initialized(self):
+        with mock.patch("time.time", return_value=100):
+            res = await self.api("get_filter_stats")
+            self.assertEqual(res, {
+                "time": 100,
+                'available': {'stations': [], 'level': [], 'rep_memo': [], 'trange': [], 'var': []},
+                'current': {'ana_id': None, 'datemax': None, 'datemin': None, 'level': None, 'rep_memo': None, 'trange': None, 'var': None},
+                'initializing': True,
+            })
+
+        with mock.patch("time.time", return_value=150):
+            res = await(self.api("init"))
+            self.assertEqual(res, {"time": 150})
+
+        with mock.patch("time.time", return_value=200):
+            res = await self.api("get_filter_stats")
+            self.assertEqual(res, {
+                "time": 200,
+                'available': {'stations': [], 'level': [], 'rep_memo': [], 'trange': [], 'var': []},
+                'current': {'ana_id': None, 'datemax': None, 'datemin': None, 'level': None, 'rep_memo': None, 'trange': None, 'var': None},
+            })
+
+
 class TestBasic(TestWebAPIMixin, AsyncTestCase):
     def setUp(self):
         super().setUp()

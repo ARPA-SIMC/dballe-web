@@ -3,7 +3,6 @@ import json
 import tornado.ioloop
 import tornado.web
 from tornado.web import url
-from .wsconnection import Hub
 from .webapi import WebAPI, WebAPIError
 from .session import Session
 import asyncio
@@ -70,6 +69,7 @@ class Application(tornado.web.Application):
             url(r"/", HomeHandler, name="home"),
             url(r"/api/1.0/ping", RestGET, kwargs={"function": "ping"}, name="api1.0_ping"),
             url(r"/api/1.0/async_ping", RestGET, kwargs={"function": "async_ping"}, name="api1.0_async_ping"),
+            url(r"/api/1.0/init", RestGET, kwargs={"function": "init"}, name="api1.0_init"),
             url(r"/api/1.0/get_filter_stats", RestGET, kwargs={"function": "get_filter_stats"}, name="api1.0_get_filter_stats"),
             url(r"/api/1.0/get_data", RestGET, kwargs={"function": "get_data"}, name="api1.0_get_data"),
             url(r"/api/1.0/get_stations", RestGET, kwargs={"function": "get_stations"}, name="api1.0_get_stations"),
@@ -77,12 +77,6 @@ class Application(tornado.web.Application):
         ]
 
         self.webapi = WebAPI(self.session)
-
-        self.ws_hub = Hub(self)
-        urls.extend(self.ws_hub.router.urls)
-
-        self.ws_hub.subscribe({"channel": "api"}, self.on_api)
-        self.ws_hub.subscribe({"channel": "events"}, self.on_event)
 
         settings.setdefault("static_path", os.path.join(os.path.dirname(__file__), "static"))
         settings.setdefault("template_path", os.path.join(os.path.dirname(__file__), "templates"))
@@ -93,29 +87,3 @@ class Application(tornado.web.Application):
         # settings.setdefault("xsrf_cookies", True)
 
         super().__init__(urls, **settings)
-
-    async def async_setup(self):
-        log.debug("Async setup")
-        options = await self.session.refresh_filter()
-        log.debug("Got options", options)
-        self.ws_hub.broadcast({"channel": "events", "type": "new_filter"})
-
-    async def on_api(self, conn, payload):
-        log.debug("API call: %r", payload)
-        payload["response"] = await self.webapi(**payload)
-        conn.send(json.dumps(payload))
-
-    async def on_event(self, conn, payload):
-        """
-        WebAPI frontend for WebSocket function calls
-        """
-        log.debug("Event: %r", payload)
-        evt_type = payload.get("type")
-        if evt_type is None:
-            log.warn("Received event without type: %r", payload)
-            return
-        handler = getattr(self, "on_event_" + evt_type, None)
-        if handler is None:
-            log.warn("Received event of unknown type: %r", payload)
-            return
-        await handler(conn, payload)

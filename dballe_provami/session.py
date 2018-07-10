@@ -100,6 +100,11 @@ class Session:
             # "datemax": self.datemax.strftime("%Y-%m-%d %H:%M:%S") if self.datemin is not None else None,
         }
 
+    async def init(self):
+        if not self.initialized:
+            log.debug("Async setup")
+            await self.refresh_filter()
+
     async def set_filter(self, flt):
         log.debug("Session.set_filter")
         self.filter = Filter.from_dict(flt)

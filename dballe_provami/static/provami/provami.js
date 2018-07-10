@@ -2,16 +2,14 @@
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Strict_mode
 "use strict";
 
-class Server extends provami.EventsBase
+class Server
 {
     constructor() {
         super();
         var self = this;
-        self.events.new_filter = new provami.Event(self);
-        self.conn = window.ws_connection;
-        self.conn.on("message", msg => { self._on_message(msg); } );
     }
 
+    /*
     _on_message(msg) {
         var self = this;
         var parsed = $.parseJSON(msg.data);
@@ -22,6 +20,7 @@ class Server extends provami.EventsBase
             self.events.new_filter.trigger(parsed);
         }
     }
+    */
 
     _get(name, args) {
         var self = this;
@@ -69,6 +68,10 @@ class Server extends provami.EventsBase
 
     async async_ping() {
         return await this._get("async_ping", {});
+    }
+
+    async init() {
+        return await this._get("init", {});
     }
 
     async get_filter_stats() {
@@ -401,7 +404,7 @@ class Provami
         //$("#filter").change(() => { $("#filter_update").attr("disabled", false); });
         $("#filter_update").click(evt => { this.submit_filter(); });
         this.server = new window.provami.Server();
-        this.server.on("new_filter", msg => { this.update_filter().then(); });
+        // this.server.on("new_filter", msg => { this.update_filter().then(); });
         this.map = new Map("map", options);
         this.fields = [
             new FilterFieldStation(this),
@@ -414,6 +417,8 @@ class Provami
 
     async init()
     {
+	await this.server.init();
+        await this.update_filter();
         var stations = await this.server.get_stations();
         this.map.set_stations(stations.stations);
         await this.update_all();
