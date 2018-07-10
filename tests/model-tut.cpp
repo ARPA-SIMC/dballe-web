@@ -3,7 +3,6 @@
 #include <dballe/types.h>
 #include <dballe/core/values.h>
 #include <dballe/core/record.h>
-#include <dballe/core/ostream.h>
 #include <QDebug>
 
 using namespace std;
@@ -14,9 +13,9 @@ using namespace provami;
 
 namespace {
 
-unique_ptr<DB> populate()
+shared_ptr<DB> populate()
 {
-    std::unique_ptr<DB> db = DB::connect_test();
+    std::shared_ptr<DB> db = DB::connect_test();
     db->reset();
 
     string stations[] = {
@@ -34,6 +33,7 @@ unique_ptr<DB> populate()
         Datetime(2015, 2, 1, 0, 0, 0),
     };
 
+    auto tr = db->transaction();
     auto rec = Record::create();
     for (auto s: stations)
         for (auto r: records)
@@ -47,8 +47,9 @@ unique_ptr<DB> populate()
                 rec->set(d);
                 rec->set(newvar(WR_VAR(0, 12, 101), 280.0));
                 DataValues dv(*rec);
-                db->insert_data(dv, true, true);
+                tr->insert_data(dv, true, true);
             }
+    tr->commit();
 
     return db;
 }
@@ -74,7 +75,7 @@ class Tests : public TestCase
             wassert(actual(model.summary_datetime_min()) == Datetime(2015, 1, 1));
             wassert(actual(model.summary_datetime_max()) == Datetime(2015, 2, 1));
             wassert(actual(model.summary_count()) == 16);
-            wassert(actual(model.stations().size()) == 4);
+            wassert(actual(model.stations().size()) == 8);
             wassert(actual(model.values().size()) == 16);
 
             qDebug() << "filter";
@@ -87,7 +88,7 @@ class Tests : public TestCase
             wassert(actual(model.summary_datetime_max()) == Datetime(2015, 2, 1));
             wassert(actual(model.summary_count()) == 8);
             wassert(actual(model.values().size()) == 8);
-            wassert(actual(model.stations().size()) == 4);
+            wassert(actual(model.stations().size()) == 8);
         });
     }
 } tests("model");

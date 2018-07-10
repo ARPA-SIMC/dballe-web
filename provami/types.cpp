@@ -98,10 +98,10 @@ Matcher::Matcher(const dballe::Query& query_gen, const std::map<int, Station> &a
 
 bool Matcher::match(const dballe::db::summary::Entry& entry) const
 {
-    if (has_flt_station && wanted_stations.find(entry.ana_id) == wanted_stations.end())
+    if (has_flt_station && wanted_stations.find(entry.station.id) == wanted_stations.end())
         return false;
 
-    if (has_flt_rep_memo && wanted_rep_memo != entry.rep_memo)
+    if (has_flt_rep_memo && wanted_rep_memo != entry.station.report)
         return false;
 
     if (has_flt_level && wanted_level != entry.level)

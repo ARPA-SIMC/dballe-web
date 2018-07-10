@@ -7,7 +7,7 @@ Group: Applications/Meteo
 Source0: https://github.com/arpa-simc/%{name}/archive/v%{version}-%{release}.tar.gz#/%{name}-%{version}-%{release}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 BuildRequires: cmake, libdballe-devel
-Requires: python-dballe, dballe, numpy, rpy
+Requires: python-dballe, dballe, numpy
 
 %description
 
@@ -51,6 +51,13 @@ ctest -V %{?_smp_mflags}
 %changelog
 * Fri Jan 26 2018 Daniele Branchini <dbranchini@arpa.emr.it> - 2.0-1%{dist}
 - python rewrite
+
+* Wed Mar 28 2018 Daniele Branchini <dbranchini@arpae.it> - 1.4-1
+- fixed #28
+
+* Wed Feb 14 2018 Daniele Branchini <dbranchini@arpae.it> - 1.3-1
+- fixed #27
+- change rpm name for automating build from github
 
 * Tue Apr 26 2016 Daniele Branchini <dbranchini@arpa.emr.it> - 1.2-1%{dist}
 - new dballe build

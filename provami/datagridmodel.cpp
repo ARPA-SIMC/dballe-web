@@ -1,5 +1,4 @@
 #include "datagridmodel.h"
-#include <dballe/core/ostream.h>
 #include <QDebug>
 #include <sstream>
 

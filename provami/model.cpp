@@ -1,5 +1,4 @@
 #include "provami/model.h"
-#include "provami/refreshthread.h"
 #include <memory>
 #include <dballe/db/db.h>
 #include <dballe/core/values.h>
@@ -21,9 +20,6 @@ Model::Model()
 
 Model::~Model()
 {
-    delete pending_query_data;
-    delete pending_query_summary;
-    delete db;
     delete global_summary;
     delete active_summary;
 }
@@ -79,7 +75,7 @@ std::vector<Value> &Model::values()
 void Model::update(Value &val, const wreport::Var &new_val)
 {
     DataValues vals;
-    vals.info.ana_id = val.ana_id;
+    vals.info.id = val.ana_id;
     vals.info.report = val.rep_memo;
     vals.info.level = val.level;
     vals.info.trange = val.trange;
@@ -92,7 +88,7 @@ void Model::update(Value &val, const wreport::Var &new_val)
 void Model::update(StationValue &val, const wreport::Var &new_val)
 {
     StationValues vals;
-    vals.info.ana_id = val.ana_id;
+    vals.info.id = val.ana_id;
     vals.info.report = val.rep_memo;
     vals.values.set(new_val);
     db->insert_station_data(vals, true, false);
@@ -135,36 +131,26 @@ void Model::set_initial_filter(const Query& rec)
 void Model::dballe_connect(const std::string &dballe_url)
 {
     if (db)
-    {
-        delete db;
-        db = 0;
-    }
+        db.reset();
 
     m_dballe_url = dballe_url;
 
-    auto new_db = DB::connect_from_url(dballe_url.c_str());
-    db = new_db.release();
+    db = DB::connect_from_url(dballe_url.c_str());
 
     //refresh();
 }
 
-void Model::set_db(std::unique_ptr<DB> &&_db, const std::string& url)
+void Model::set_db(std::shared_ptr<DB> db, const std::string& url)
 {
-    if (db)
-    {
-        delete db;
-        db = 0;
-    }
-
     m_dballe_url = url;
-
-    db = _db.release();
+    this->db = db;
 
     //refresh();
 }
 
 void Model::test_wait_for_refresh()
 {
+/*
     if (pending_query_data)
         pending_query_data->future_watcher.waitForFinished();
     if (pending_query_summary)
@@ -172,6 +158,16 @@ void Model::test_wait_for_refresh()
 
     QEventLoop loop;
     loop.processEvents();
+ */
+}
+
+std::shared_ptr<dballe::db::Transaction> Model::get_refresh_transaction()
+{
+    if (!refresh_transaction.expired())
+        return refresh_transaction.lock();
+    auto res = db->transaction(); // TODO: make it read only
+    refresh_transaction = res;
+    return res;
 }
 
 void Model::refresh(bool accurate)
@@ -182,22 +178,16 @@ void Model::refresh(bool accurate)
 
 void Model::refresh_data()
 {
-    // TODO: queue it instead of ignoring it?
-    if (pending_query_data) return;
     emit progress("data", "Loading data...");
+    auto tr = get_refresh_transaction();
     auto query = active_filter->clone();
     core::Query::downcast(*query).limit = limit;
-    pending_query_data = new PendingDataRequest(db, move(query), this, SLOT(on_have_new_data()));
+    on_have_new_data(tr->query_data(*query));
 }
 
-void Model::on_have_new_data()
+void Model::on_have_new_data(std::unique_ptr<db::CursorData> cur)
 {
     emit progress("data", "Processing data...");
-
-    // Get the result out of the pending action
-    unique_ptr<db::CursorData> cur(pending_query_data->future_watcher.future().result());
-    delete pending_query_data;
-    pending_query_data = nullptr;
 
     emit begin_data_changed();
     // Query data for the currently active filter
@@ -214,9 +204,6 @@ void Model::on_have_new_data()
 void Model::refresh_summary(bool accurate)
 {
     using namespace dballe::db::summary;
-
-    // TODO: queue it instead of ignoring it?
-    if (pending_query_summary) return;
 
     emit progress("summary", "Loading summary...");
 
@@ -246,8 +233,8 @@ void Model::refresh_summary(bool accurate)
     {
         // The best summary that we have do not support what we need: hit the database
         emit progress("summary", "Loading summary from db...");
-        pending_query_summary = new PendingSummaryRequest(db, move(query),
-                this, SLOT(on_have_new_summary()));
+        auto tr = get_refresh_transaction();
+        on_have_new_summary(tr->query_summary(*query), *query);
     }
     else
     {
@@ -269,7 +256,7 @@ void Model::refresh_summary(bool accurate)
     }
 }
 
-void Model::on_have_new_summary()
+void Model::on_have_new_summary(std::unique_ptr<db::CursorSummary> cur, const dballe::Query& query)
 {
     emit progress("summary", "Processing summary...");
     qDebug() << "Refresh summary results arrived";
@@ -283,17 +270,12 @@ void Model::on_have_new_summary()
     }
 
     // Get the result out of the pending action
-    unique_ptr<db::CursorSummary> cur(pending_query_summary->future_watcher.future().result());
     if (active_summary)
     {
         delete active_summary;
         active_summary = nullptr;
     }
-    active_summary = new db::Summary(*(pending_query_summary->query));
-
-    bool with_details = core::Query::downcast(*pending_query_summary->query).query == "details";
-    delete pending_query_summary;
-    pending_query_summary = nullptr;
+    active_summary = new db::Summary(query);
 
     if (do_global_summary)
         cache_stations.clear();
@@ -302,14 +284,14 @@ void Model::on_have_new_summary()
 
     while (cur->next())
     {
-        active_summary->add_summary(*cur, with_details);
+        active_summary->add_summary(*cur);
 
         if (do_global_summary)
         {
             int ana_id = cur->get_station_id();
             if (cache_stations.find(ana_id) == cache_stations.end())
                 cache_stations.insert(make_pair(ana_id, Station(*cur)));
-            global_summary->add_summary(*cur, with_details);
+            global_summary->add_summary(*cur);
         }
     }
 
@@ -379,15 +361,14 @@ void Model::process_summary()
         mark_hidden_stations(sub);
 
         // Harvest all idents from the station present in sub to create a filtered ident selection
-        for (int s_id : sub.all_stations)
-        {
-            auto s = cache_stations.find(s_id);
-            if (s != cache_stations.end() && !s->second.ident.empty())
-                all_idents.insert(s->second.ident);
-        }
+        for (const auto& si : sub.all_stations)
+            if (!si.second.ident.is_missing())
+                all_idents.insert(si.second.ident);
 
         // Mark all stations selected by next_filter as selected
-        _selected_stations = next_summary.all_stations;
+        _selected_stations.clear();
+        for (const auto& si : next_summary.all_stations)
+            _selected_stations.insert(si.first);
     } else {
         // If we have no station filter, we can hide all stations
         // that would give no data if the current next_filter were
@@ -395,12 +376,9 @@ void Model::process_summary()
         mark_hidden_stations(next_summary);
 
         // Harvest all idents from the same set of stations, to create a filtered ident selection
-        for (int s_id : next_summary.all_stations)
-        {
-            auto s = cache_stations.find(s_id);
-            if (s != cache_stations.end() && !s->second.ident.empty())
-                all_idents.insert(s->second.ident);
-        }
+        for (const auto& si : next_summary.all_stations)
+            if (!si.second.ident.is_missing())
+                all_idents.insert(si.second.ident);
 
         // No station is currently selected, so clear the list
         _selected_stations.clear();

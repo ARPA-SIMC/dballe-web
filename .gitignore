@@ -1,6 +1,7 @@
 *.swp
 *.o
 *.pyc
+*~
 moc_*.cpp
 Makefile
 /debian/provami-qt

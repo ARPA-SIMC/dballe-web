@@ -1,6 +1,5 @@
 #include "provami/dateedit.h"
 #include "provami/model.h"
-#include <dballe/core/ostream.h>
 #include <QKeyEvent>
 #include <sstream>
 

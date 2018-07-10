@@ -17,8 +17,6 @@
 
 namespace provami {
 class Model;
-class PendingDataRequest;
-class PendingSummaryRequest;
 
 class Model : public QObject
 {
@@ -46,8 +44,6 @@ public slots:
     void unselect_datemin();
     void unselect_datemax();
     void set_filter(const dballe::Query& new_filter);
-    void on_have_new_summary();
-    void on_have_new_data();
 
 signals:
     void next_filter_changed();
@@ -57,15 +53,13 @@ signals:
     void progress(QString task, QString progress=QString());
 
 public:
-    dballe::DB* db;
-    //RefreshThread refresh_thread;
+    std::shared_ptr<dballe::DB> db;
 
 protected:
-    /// Monitor a pending data refresh action
-    PendingDataRequest* pending_query_data = nullptr;
+    /// Current transaction for refreshing values (if any)
+    std::weak_ptr<dballe::db::Transaction> refresh_transaction;
 
-    /// Monitor a pending summary refresh action
-    PendingSummaryRequest* pending_query_summary = nullptr;
+    std::shared_ptr<dballe::db::Transaction> get_refresh_transaction();
 
     /// All known stations, indexed by their ana_id
     std::map<int, Station> cache_stations;
@@ -101,6 +95,9 @@ protected:
 
     /// Mark as hidden all the stations not present in summary
     void mark_hidden_stations(const dballe::db::Summary& summary);
+
+    void on_have_new_summary(std::unique_ptr<dballe::db::CursorSummary>, const dballe::Query& query);
+    void on_have_new_data(std::unique_ptr<dballe::db::CursorData>);
 
 public:
     // Current highlight
@@ -169,7 +166,7 @@ public:
     void dballe_connect(const std::string& dballe_url);
 
     /// Take over an existing db
-    void set_db(std::unique_ptr<dballe::DB>&& db, const std::string &url);
+    void set_db(std::shared_ptr<dballe::DB> db, const std::string &url);
 
     /// Synchronously wait for the refresh to finish. Uses only for tests.
     void test_wait_for_refresh();
