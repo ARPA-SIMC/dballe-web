@@ -32,6 +32,8 @@ class FilterFieldStation extends FilterField
     {
         this.field_value.text("all");
         this.remove.hide();
+        this.value = {};
+        this.filters.update_filter().then();
     }
 
     _filters_to_text(filters)
@@ -57,7 +59,11 @@ class FilterFieldStation extends FilterField
         else
             filters.push(["mobile", 0]);
         this.field_value.text(this._filters_to_text(filters));
+        this.value = {};
         this.remove.show();
+        for (let f of filters)
+            this.value[f[0]] = f[1];
+        this.filters.update_filter().then();
     }
 
     select_station_bounds(bounds, finished)
@@ -81,6 +87,7 @@ class FilterFieldStation extends FilterField
     update_explorer(explorer)
     {
         this.map.update_explorer(explorer);
+        // TODO this.filter = explorer.filter;
     }
 }
 
@@ -95,17 +102,16 @@ class FilterFieldChoices extends FilterField
         super(filters, name);
         this.field = $("#filter-field-" + name);
         this.field.change(evt => {
-            var args = {};
-            args[this.name] = this.field.val();
-            this.filters.set_filter(args).then();
+            this.value = {};
+            this.value[this.name] = this.field.val();
+            this.filters.update_filter().then();
         });
     }
 
     unset()
     {
-        var args = {};
-        args[this.name] = null;
-        this.filters.set_filter(args).then();
+        this.value = {};
+        this.filters.update_filter().then();
     }
 
     _get_option(o) {
@@ -119,7 +125,7 @@ class FilterFieldChoices extends FilterField
     {
         // Only one available option, mark it as hardcoded
         value = this._get_option(value);
-        this.value = null;
+        this.value = {};
         this.remove.hide();
         this.row.find("td.value span.value").text(value[1]).show();
         this.field.hide();
@@ -128,7 +134,7 @@ class FilterFieldChoices extends FilterField
     _set_multi(options)
     {
         // Multiple available options
-        this.value = null;
+        this.value = {};
 
         // Fill the <option> list in the <select> field
         this.field.empty();
@@ -149,7 +155,8 @@ class FilterFieldChoices extends FilterField
     {
         // Chosen: show the choice
         value = this._get_option(value);
-        this.value = value[0];
+        this.value = {};
+        this.value[this.name] = value[0];
         this.remove.show();
         this.row.find("td.value span.value").text(value[1]).show();
         this.field.hide();
@@ -157,8 +164,8 @@ class FilterFieldChoices extends FilterField
 
     update_explorer(explorer)
     {
-        var current = explorer.filter[this.name];
-        var options = explorer[this.name];
+        let current = explorer.filter[this.name];
+        let options = explorer[this.name];
         if (current == null)
         {
             // Not currently chosen
@@ -166,8 +173,9 @@ class FilterFieldChoices extends FilterField
                 this._set_forced(options[0]);
             else
                 this._set_multi(options);
-        } else
+        } else {
             this._set_chosen(current);
+        }
     }
 }
 
@@ -187,7 +195,6 @@ class Filters
             new FilterFieldChoices(this, "level"),
             new FilterFieldChoices(this, "trange"),
         ];
-        this.filter = {}
 
         $("#filter_fields").attr("disabled", true);
         $("#filter_update").attr("disabled", true);
@@ -203,8 +210,6 @@ class Filters
     {
         console.log("New explorer state:", explorer);
 
-        this.filter = explorer.filter;
-
         $.each(this.fields, (idx, el) => {
             el.update_explorer(explorer);
         });
@@ -217,11 +222,13 @@ class Filters
      *
      * filter is a dict with the filter values that need to be changed.
      */
-    async set_filter(filter)
+    async update_filter()
     {
-        Object.assign(this.filter, filter);
-        console.log("Set new filter after", filter, "→", this.filter);
-        await this.provami.set_filter(this.filter);
+        let filter = {};
+        for (let field of this.fields)
+            Object.assign(filter, field.value);
+        console.log("Set new filter", filter);
+        await this.provami.set_filter(filter);
     }
 }
 
