@@ -28,6 +28,9 @@ class Filter:
         self.datemin = None
         self.datemax = None
 
+    def to_tuple(self, o):
+        return (self.ana_id, self.rep_memo, self.level, self.trange, self.var, self.datemin, self.datemax)
+
     def to_record(self):
         res = dballe.Record()
         if self.ana_id is not None:
@@ -70,6 +73,28 @@ class Filter:
         return res
 
 
+class Revalidator:
+    def __init__(self, session):
+        self.session = session
+        # Future for the current revalidation process
+        self.current_future = None
+
+    def _revalidate(self):
+        try:
+            with self.session.db.transaction() as tr:
+                self.session.explorer.revalidate(tr)
+            self.current_future = None
+            self.session.initialized = True
+        except Exception:
+            log.exception("Revalidate failed")
+            return []
+
+    async def __call__(self):
+        if self.current_future is None:
+            self.current_future = self.session.loop.run_in_executor(self.session.executor, self._revalidate)
+        await self.current_future
+
+
 class Session:
     def __init__(self, db_url):
         self.loop = asyncio.get_event_loop()
@@ -79,6 +104,7 @@ class Session:
         self.filter = Filter()
         self.explorer = dballe.Explorer()
         self.initialized = False
+        self._revalidate = Revalidator(self)
 
     def explorer_to_dict(self):
         if not self.initialized:
@@ -103,7 +129,7 @@ class Session:
     async def init(self):
         if not self.initialized:
             log.debug("Async setup")
-            await self.refresh_filter()
+            await self._revalidate()
 
     async def set_filter(self, flt):
         log.debug("Session.set_filter")
@@ -112,17 +138,7 @@ class Session:
 
     async def refresh_filter(self):
         log.debug("Session.refresh_filter")
-
-        def _revalidate():
-            try:
-                with self.db.transaction() as tr:
-                    self.explorer.revalidate(tr)
-            except Exception:
-                log.exception("Revalidate failed")
-                return []
-
-        await self.loop.run_in_executor(self.executor, _revalidate)
-        self.initialized = True
+        await self._revalidate()
         return self.explorer_to_dict()
 
     async def get_data(self, limit=20):

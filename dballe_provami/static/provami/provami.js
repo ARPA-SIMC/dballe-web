@@ -5,7 +5,6 @@
 class Server
 {
     constructor() {
-        super();
         var self = this;
     }
 
@@ -238,7 +237,7 @@ class Map
         // Station markers layer
         this.stations_layer = null;
         // Station markers indexed by station ana_id
-        this.stations_by_id = {};
+        // TODO this.stations_by_id = {};
         // Stations available in the current query results
         this.stations_current = {};
 
@@ -341,7 +340,7 @@ class Map
             this.map.removeLayer(this.stations_layer);
 
         this.stations_layer = null;
-        this.stations_by_id = {};
+        // TODO this.stations_by_id = {};
 
         if (!stations.length) return;
 
@@ -351,12 +350,18 @@ class Map
         // Compute the bounding box of the points
         for (var i = 0; i < stations.length; ++i)
         {
-            var id = stations[i][1];      // Station ID (integer)
-            var lat = stations[i][2];     // Station latitude (float)
-            var lon = stations[i][3];     // Station longitude (float)
+            var report = stations[i][0];  // Station report
+            var lat = stations[i][1];     // Station latitude (float)
+            var lon = stations[i][2];     // Station longitude (float)
+            var ident = stations[i][3];   // Mobile station identifier
+            var title;
+            if (ident)
+                title = `${ident} (${report})`;
+            else
+                title = `${lat.toFixed(2)},${lon.toFixed(2)} (${report})`;
             points.push([lat, lon]);
-            var marker = L.marker(new L.LatLng(lat, lon), { title: id, id: id, hidden: false });
-            this.stations_by_id[id] = marker;
+            var marker = L.marker(new L.LatLng(lat, lon), { title: title, id: { report: report, lat: lat, lon: lon, ident: ident }, hidden: false });
+            // TODO this.stations_by_id[id] = marker;
             marker.on("click", evt => {
                 // if (evt.target.options.hidden) return;
                 // select_marker(evt.target.options.id);
@@ -379,15 +384,19 @@ class Map
 
     set_current_stations(ids)
     {
+        if (!this.stations_layer)
+            throw "Map.set_current_stations called before Map.set_stations";
         var c = {};
         for (var i = 0; i < ids.length; ++i)
             c[ids[i]] = true;
+        /* TODO
         $.each(this.stations_by_id, (id, marker) => {
             if (c[id])
                 marker.setIcon(new this.IconSelected);
             else
                 marker.setIcon(new L.Icon.Default);
         });
+        */
         this.stations_current = c;
         this.stations_layer.refreshClusters();
     }
@@ -417,8 +426,7 @@ class Provami
 
     async init()
     {
-	await this.server.init();
-        await this.update_filter();
+        await this.server.init();
         var stations = await this.server.get_stations();
         this.map.set_stations(stations.stations);
         await this.update_all();

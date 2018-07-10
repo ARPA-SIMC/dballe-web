@@ -87,3 +87,6 @@ class Application(tornado.web.Application):
         # settings.setdefault("xsrf_cookies", True)
 
         super().__init__(urls, **settings)
+
+    async def async_setup(self):
+        await self.session.init()
