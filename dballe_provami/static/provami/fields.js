@@ -36,10 +36,10 @@ class FilterFieldStation extends FilterField
 
     _filters_to_text(filters)
     {
-        var strs = [];
-        for (var i in filters)
+        let strs = [];
+        for (let i of filters)
         {
-            strs.push(filters[i][0] + "=" + filters[i][1]);
+            strs.push(i[0] + "=" + i[1]);
         }
         return strs.join(" ");
     }
@@ -53,9 +53,9 @@ class FilterFieldStation extends FilterField
             ["lon", info.lon],
         ];
         if (info.ident)
-            filters["ident"] = info.ident;
+            filters.push(["ident", info.ident]);
         else
-            filters["mobile"] = 0;
+            filters.push(["mobile", 0]);
         this.field_value.text(this._filters_to_text(filters));
         this.remove.show();
     }
@@ -63,7 +63,7 @@ class FilterFieldStation extends FilterField
     select_station_bounds(bounds, finished)
     {
         console.log("Bounds", bounds, finished);
-        var filter = [
+        var filters = [
             ["latmin", bounds._southWest.lat.toFixed(5)],
             ["latmax", bounds._northEast.lat.toFixed(5)],
             ["lonmin", bounds._northEast.lng.toFixed(5)],
@@ -80,7 +80,7 @@ class FilterFieldStation extends FilterField
 
     update_explorer(explorer)
     {
-        this.map.set_current_stations(explorer.stations);
+        this.map.update_explorer(explorer);
     }
 }
 
@@ -181,7 +181,7 @@ class Filters
     {
         this.provami = provami
         this.fields = [
-            // new FilterFieldStation(this),
+            new FilterFieldStation(this),
             new FilterFieldChoices(this, "rep_memo"),
             new FilterFieldChoices(this, "var"), // TODO: rename in varcode
             new FilterFieldChoices(this, "level"),

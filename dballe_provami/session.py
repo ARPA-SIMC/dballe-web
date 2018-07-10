@@ -116,9 +116,20 @@ class Session:
         def trange_key(t):
             return tuple((str(x) if x is not None else "") for x in t)
 
+        # Dispatch stations between currently selectable and all other stations
+        current_stations_set = frozenset(self.explorer.stations)
+        stations = []
+        stations_disabled = []
+        for station in self.explorer.all_stations:
+            if station in current_stations_set:
+                stations.append(station)
+            else:
+                stations_disabled.append(station)
+
         return {
             "filter": self.filter.to_dict(),
-            "stations": self.explorer.stations,
+            "stations": stations,
+            "stations_disabled": stations_disabled,
             "rep_memo": self.explorer.reports,
             "level": [(tuple(x), dballe.describe_level(*x)) for x in self.explorer.levels],
             "trange": [(tuple(x), dballe.describe_trange(*x)) for x in self.explorer.tranges],

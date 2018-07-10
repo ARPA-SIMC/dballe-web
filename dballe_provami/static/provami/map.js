@@ -2,24 +2,75 @@
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Strict_mode
 "use strict";
 
+class Stations
+{
+    constructor()
+    {
+        this.stations = {};
+    }
+
+    update_explorer(explorer)
+    {
+        let updated = [];
+        let created = [];
+
+        var update_station = (station, current) => {
+            let key = station.join(":");
+            let s = this.stations[key];
+            if (s)
+            {
+                if (s.current != current)
+                {
+                    s.current = current;
+                    updated.push(s);
+                }
+            } else {
+                s = {
+                    report: station[0],  // Station report
+                    lat: station[1],     // Station latitude (float)
+                    lon: station[2],     // Station longitude (float)
+                    ident: station[3],   // Mobile station identifier
+                    current: current,
+                };
+                if (s.ident)
+                    s.title = `${s.ident} (${s.report})`;
+                else
+                    s.title = `${s.lat.toFixed(2)},${s.lon.toFixed(2)} (${s.report})`;
+                this.stations[key] = s;
+                created.push(s);
+            }
+        };
+
+        for (const station of explorer.stations)
+            update_station(station, true);
+        for (const station of explorer.stations_disabled)
+            update_station(station, false);
+        // TODO: remove stations no longer present
+
+        return {
+            updated: updated,
+            created: created,
+        };
+    }
+}
+
+
 class Map
 {
     constructor(id, options)
     {
         this.options = options;
+
+        // Track station changes
+        this.stations = new Stations();
+
+        // Objects that are notified of user events
+        this.controllers = [];
+
         // Alternative icon styles
         this.IconSelected = this._make_alt_icon("selected");
         //this.IconHighlighted = this._make_alt_icon("highlighted");
         //this.IconHidden = this._make_alt_icon("hidden");
-
-        this.controllers = [];
-
-        // Station markers layer
-        this.stations_layer = null;
-        // Station markers indexed by station ana_id
-        // TODO this.stations_by_id = {};
-        // Stations available in the current query results
-        this.stations_current = {};
 
         this.map = L.map(id, { boxZoom: false });
 
@@ -32,6 +83,9 @@ class Map
         // Show the mouse position in the map
         L.control.mousePosition({ position: "bottomright" }).addTo(this.map);
 
+        // Station markers layer
+        this.markers_layer = null;
+
         // Add the rectangle selection facility
         var selectfeature = this.map.boxSelect.enable();
         this.map.on("boxselecting", (e) => {
@@ -40,19 +94,7 @@ class Map
         this.map.on("boxselected", (e) => {
             $.each(this.controllers, (idx, c) => { c.select_station_bounds(e.bounds, true); });
         });
-        //var selectfeature = map.selectAreaFeature.enable();
-        //var locationFilter = new L.LocationFilter({ buttonPosition: "bottomleft", adjustButton: null }).addTo(map);
-        /*
-        locationFilter.on("change", function(e) {
-          window.provami.js_area_selected(e.bounds.getNorth(), e.bounds.getSouth(), e.bounds.getWest(), e.bounds.getEast());
-        });
-        locationFilter.on("enabled", function(e) {
-          window.provami.js_area_selected(e.bounds.getNorth(), e.bounds.getSouth(), e.bounds.getWest(), e.bounds.getEast());
-        });
-        locationFilter.on("disabled", function(e) {
-          window.provami.js_area_unselected();
-        });
-        */
+        this.initial = true;
     }
 
     _make_alt_icon(type)
@@ -68,119 +110,86 @@ class Map
         });
     }
 
-    _make_markers_layer()
+    _redo_markers_layer(stations)
     {
-        return new L.markerClusterGroup({
+        let layer = new L.markerClusterGroup({
             maxClusterRadius: 30,
             iconCreateFunction: cluster => {
-                var children = cluster.getAllChildMarkers();
-                var is_hidden = true;
-                var has_current = false;
-                //var has_highlighted = false;
-                for (var i in children)
+                let children = cluster.getAllChildMarkers();
+                let has_current = false;
+                for (let i in children)
                 {
-                    var id = children[i].options.id;
-                    is_hidden &= children[i].options.hidden;
-                    has_current |= !!this.stations_current[id];
-                    //has_highlighted |= (marker_highlighted && marker_highlighted.options.id == id);
+                    let station = children[i].options.id;
+                    has_current |= station.current;
                 }
 
-                //return new L.DivIcon({ html: '<b>' + cluster.getChildCount() + '</b>' });
-                var childCount = cluster.getChildCount();
-
-                var c = ' marker-cluster-';
-                if (is_hidden)
-                    c += "hidden";
-                else if (has_current)
-                    c += "current";
-                /*
-                else if (has_highlighted)
-                    c += "highlighted";
-                */
-                else
-                    c += "normal";
-
-                return new L.DivIcon({ html: '<div><span>' + childCount + '</span></div>', className: 'marker-cluster' + c, iconSize: new L.Point(40, 40) });
+                let childCount = cluster.getChildCount();
+                let c = has_current ? ' marker-cluster-current' : ' marker-cluster-normal';
+                return new L.DivIcon({
+                    html: '<div><span>' + childCount + '</span></div>',
+                    className: 'marker-cluster' + c,
+                    iconSize: new L.Point(40, 40)
+                });
             }
         });
-    }
 
-    /**
-     * Replace all the stations on the map with the ones in data.
-     *
-     * Data is a list of station information, as follows:
-     * data = [
-     *      [id, lat, lon, selected, hidden],
-     * ];
-     */
-    set_stations(stations)
-    {
-        var first_show = this.stations_layer == null;
-        if (this.stations_layer != null)
-            this.map.removeLayer(this.stations_layer);
-
-        this.stations_layer = null;
-        // TODO this.stations_by_id = {};
-
-        if (!stations.length) return;
-
-        this.stations_layer = this._make_markers_layer();
-        var points = [];
-
-        // Compute the bounding box of the points
-        for (var i = 0; i < stations.length; ++i)
+        for (let s of stations)
         {
-            var report = stations[i][0];  // Station report
-            var lat = stations[i][1];     // Station latitude (float)
-            var lon = stations[i][2];     // Station longitude (float)
-            var ident = stations[i][3];   // Mobile station identifier
-            var title;
-            if (ident)
-                title = `${ident} (${report})`;
-            else
-                title = `${lat.toFixed(2)},${lon.toFixed(2)} (${report})`;
-            points.push([lat, lon]);
-            var marker = L.marker(new L.LatLng(lat, lon), { title: title, id: { report: report, lat: lat, lon: lon, ident: ident }, hidden: false });
-            // TODO this.stations_by_id[id] = marker;
-            marker.on("click", evt => {
-                // if (evt.target.options.hidden) return;
-                // select_marker(evt.target.options.id);
-                $.each(this.controllers, (idx, c) => { c.select_station(evt.target.options.id); });
+            s.marker = L.marker(new L.LatLng(s.lat, s.lon), { title: s.title, id: s, hidden: false });
+            if (s.current)
+                s.marker.setIcon(new this.IconSelected());
+            s.marker.on("click", evt => {
+                for (let c of this.controllers)
+                    c.select_station(evt.target.options.id);
             });
-            this.stations_layer.addLayer(marker);
-            // This will remove and add it again to cause an update; it seems to cause
-            // no harm at the moment, so I'll go for code reuse instead of optimization
-            //update_marker(marker);
+            layer.addLayer(s.marker);
         }
 
-        this.map.addLayer(this.stations_layer);
-
-        if (first_show)
-        {
-            var bounds = L.latLngBounds(points);
-            this.map.fitBounds(bounds);
-        }
+        if (this.markers_layer != null)
+            this.map.removeLayer(this.markers_layer);
+        this.markers_layer = layer;
+        this.map.addLayer(layer);
     }
 
-    set_current_stations(ids)
+    zoom_to_fit()
     {
-        if (!this.stations_layer)
-            throw "Map.set_current_stations called before Map.set_stations";
-        var c = {};
-        for (var i = 0; i < ids.length; ++i)
-            c[ids[i]] = true;
-        /* TODO
-        $.each(this.stations_by_id, (id, marker) => {
-            if (c[id])
-                marker.setIcon(new this.IconSelected);
-            else
-                marker.setIcon(new L.Icon.Default);
-        });
-        */
-        this.stations_current = c;
-        this.stations_layer.refreshClusters();
+        // Compute the bounding box of the points
+        let points = [];
+        for (const k in this.stations.stations)
+        {
+            const station = this.stations.stations[k];
+            if (!station.current) continue;
+            points.push([station.lat, station.lon]);
+        }
+        let bounds = L.latLngBounds(points);
+        this.map.fitBounds(bounds);
+    }
+
+    update_explorer(explorer)
+    {
+        let res = this.stations.update_explorer(explorer);
+
+        if (res.created.length)
+            this._redo_markers_layer(res.created);
+        else if (res.updated.length)
+        {
+            for (let s of res.updated)
+            {
+                this.markers_layer.removeLayer(s.marker);
+                s.marker.setIcon(s.current ? new this.IconSelected() : new L.Icon.Default());
+                this.markers_layer.addLayer(s.marker);
+            }
+            this.markers_layer.refreshClusters();
+        }
+
+        if (this.initial)
+        {
+            this.zoom_to_fit();
+            this.initial = false;
+        }
     }
 }
+
 
 window.provami = $.extend(window.provami || {}, {
     Map: Map,
