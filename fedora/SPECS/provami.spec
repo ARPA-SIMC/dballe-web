@@ -52,7 +52,7 @@ ctest -V %{?_smp_mflags}
 * Fri Jan 26 2018 Daniele Branchini <dbranchini@arpa.emr.it> - 2.0-1%{dist}
 - python rewrite
 
-* Wed Mar 28 2018 Daniele Branchini <dbranchini@arpae.it> - 1.4-1
+* Wed Mar 28 2018 Daniele Branchini <dbranchini@arpae.it> - 1.4-2
 - fixed #28
 
 * Wed Feb 14 2018 Daniele Branchini <dbranchini@arpae.it> - 1.3-1
