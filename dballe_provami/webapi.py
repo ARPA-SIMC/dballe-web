@@ -52,8 +52,9 @@ class WebAPI:
         }
 
     async def do_init(self, **kw):
-        await self.session.init()
-        return {}
+        return {
+            "explorer": await self.session.init(),
+        }
 
     def do_get_filter_stats(self, **kw):
         return {
@@ -72,5 +73,6 @@ class WebAPI:
         }
 
     async def do_set_filter(self, filter, **kw):
-        await self.session.set_filter(filter)
-        return {}
+        return {
+            "explorer": await self.session.set_filter(filter),
+        }

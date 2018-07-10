@@ -117,6 +117,7 @@ class Session:
             return tuple((str(x) if x is not None else "") for x in t)
 
         return {
+            "filter": self.filter.to_dict(),
             "stations": self.explorer.stations,
             "rep_memo": self.explorer.reports,
             "level": [(tuple(x), dballe.describe_level(*x)) for x in self.explorer.levels],
@@ -124,17 +125,20 @@ class Session:
             "var": self.explorer.varcodes,
             # "datemin": self.datemin.strftime("%Y-%m-%d %H:%M:%S") if self.datemin is not None else None,
             # "datemax": self.datemax.strftime("%Y-%m-%d %H:%M:%S") if self.datemin is not None else None,
+            "initialized": self.initialized,
         }
 
     async def init(self):
         if not self.initialized:
             log.debug("Async setup")
             await self._revalidate()
+        return self.explorer_to_dict()
 
     async def set_filter(self, flt):
         log.debug("Session.set_filter")
         self.filter = Filter.from_dict(flt)
         await self.loop.run_in_executor(self.executor, self.explorer.set_filter, self.filter.to_record())
+        return self.explorer_to_dict()
 
     async def refresh_filter(self):
         log.debug("Session.refresh_filter")
