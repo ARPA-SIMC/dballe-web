@@ -139,6 +139,20 @@ class Session:
             "initialized": self.initialized,
         }
 
+    async def export(self, format, out):
+        """
+        Export the currently selected data to out.
+
+        Note: for BUFR and CREX, export is run in an executor, so data being
+        processed needs to make sure it handles being generated/handled on a
+        different thread
+        """
+        if format in ("BUFR", "CREX"):
+            def exporter():
+                with self.db.transaction() as tr:
+                    tr.export_to_file(self.filter.to_record(), format, out)
+            await self.loop.run_in_executor(self.executor, exporter)
+
     async def init(self):
         if not self.initialized:
             log.debug("Async setup")

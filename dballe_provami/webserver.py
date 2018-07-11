@@ -5,6 +5,7 @@ import tornado.web
 from tornado.web import url
 from .webapi import WebAPI, WebAPIError
 from .session import Session
+import datetime
 import asyncio
 import logging
 
@@ -60,6 +61,42 @@ class RestPOST(tornado.web.RequestHandler):
             })
 
 
+class WriteToHandler:
+    def __init__(self, handler, cluster_size=1):
+        self.loop = asyncio.get_event_loop()
+        self.handler = handler
+        self.cluster = []
+        self.cluster_size = cluster_size
+
+    def write(self, chunk):
+        self.cluster.append(chunk)
+        if len(self.cluster) > self.cluster_size:
+            self.flush()
+
+    def flush(self):
+        cluster = self.cluster
+        self.cluster = []
+
+        def do_flush():
+            for c in cluster:
+                self.handler.write(c)
+            self.handler.flush()
+
+        self.loop.call_soon_threadsafe(do_flush)
+
+
+class Export(tornado.web.RequestHandler):
+    """
+    Download data selected in the current section
+    """
+    async def get(self, format, **kwargs):
+        fname = datetime.datetime.now().strftime("%Y%m%d-%H%M")
+        self.set_header("Content-Disposition", 'attachment; filename="{}.{}"'.format(fname, format.lower()))
+        self.set_header("Content-Type", "application/octet-stream")
+        writer = WriteToHandler(self)
+        await self.application.session.export(format, writer)
+
+
 class Application(tornado.web.Application):
     def __init__(self, db_url, **settings):
         self.loop = asyncio.get_event_loop()
@@ -72,6 +109,7 @@ class Application(tornado.web.Application):
             url(r"/api/1.0/init", RestGET, kwargs={"function": "init"}, name="api1.0_init"),
             url(r"/api/1.0/get_data", RestGET, kwargs={"function": "get_data"}, name="api1.0_get_data"),
             url(r"/api/1.0/set_filter", RestPOST, kwargs={"function": "set_filter"}, name="api1.0_set_filter"),
+            url(r"/api/1.0/export/(?P<format>\w+)", Export, name="export"),
         ]
 
         self.webapi = WebAPI(self.session)

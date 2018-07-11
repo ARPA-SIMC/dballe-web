@@ -27,9 +27,10 @@ class Stations
             } else {
                 s = {
                     report: station[0],  // Station report
-                    lat: station[1],     // Station latitude (float)
-                    lon: station[2],     // Station longitude (float)
-                    ident: station[3],   // Mobile station identifier
+                    id: station[1],  // Station report
+                    lat: station[2],     // Station latitude (float)
+                    lon: station[3],     // Station longitude (float)
+                    ident: station[4],   // Mobile station identifier
                     current: current,
                 };
                 if (s.ident)
