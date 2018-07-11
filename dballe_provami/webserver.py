@@ -91,8 +91,11 @@ class Export(tornado.web.RequestHandler):
     """
     async def get(self, format, **kwargs):
         fname = datetime.datetime.now().strftime("%Y%m%d-%H%M")
-        self.set_header("Content-Disposition", 'attachment; filename="{}.{}"'.format(fname, format.lower()))
-        self.set_header("Content-Type", "application/octet-stream")
+        self.set_header("Content-Disposition", 'attachment; filename="{}.{}"'.format(fname, format))
+        if format == "csv":
+            self.set_header("Content-Type", "text/csv")
+        else:
+            self.set_header("Content-Type", "application/octet-stream")
         writer = WriteToHandler(self)
         await self.application.session.export(format, writer)
 

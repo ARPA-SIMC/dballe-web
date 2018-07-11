@@ -1,4 +1,5 @@
 import dballe
+from dballe import dbacsv
 import asyncio
 import concurrent.futures
 import logging
@@ -147,10 +148,14 @@ class Session:
         processed needs to make sure it handles being generated/handled on a
         different thread
         """
-        if format in ("BUFR", "CREX"):
+        if format in ("bufr", "crex"):
             def exporter():
                 with self.db.transaction() as tr:
-                    tr.export_to_file(self.filter.to_record(), format, out)
+                    tr.export_to_file(self.filter.to_record(), format.upper(), out)
+            await self.loop.run_in_executor(self.executor, exporter)
+        elif format == "csv":
+            def exporter():
+                dbacsv.export(self.db, self.filter.to_record(), out)
             await self.loop.run_in_executor(self.executor, exporter)
 
     async def init(self):
