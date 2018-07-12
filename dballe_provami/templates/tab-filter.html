@@ -12,83 +12,55 @@
     Filter
   </div>
   <div class="card-body">
-  <form id="filter">
-  <table id="filter" class="table table-borderless table-sm">
-    <tbody>
-      <tr id="filter-station">
-        <th><label for="filter-field-station">Station:</label></th>
-        <td class="provami-value">all<td>
-        <td><button class="btn btn-outline-dark btn-sm provami-remove"><span class="oi oi-delete"></span></button></td>
-      </tr>
-      <tr id="filter-rep_memo">
-        <th><label for="filter-field-rep_memo">Network:</label></th>
-        <td>
-          <span class="provami-value"></span>
-          <select class="form-control" id="filter-field-rep_memo">
-          </select>
-        </td>
-        <td><button class="btn btn-outline-dark btn-sm provami-remove"><span class="oi oi-delete"></span></button></td>
-      </tr>
-      <tr id="filter-var">
-        <th><label for="filter-field-var">Variable:</label></th>
-        <td>
-          <span class="provami-value"></span>
-          <select class="form-control" id="filter-field-var">
-          </select>
-        </td>
-        <td><button class="btn btn-outline-dark btn-sm provami-remove"><span class="oi oi-delete"></span></button></td>
-      </tr>
-      <tr id="filter-level">
-        <th><label for="filter-field-level">Level:</label></th>
-        <td>
-          <span class="provami-value"></span>
-          <select class="form-control" id="filter-field-level">
-          </select>
-        </td>
-        <td><button class="btn btn-outline-dark btn-sm provami-remove"><span class="oi oi-delete"></span></button></td>
-      </tr>
-      <tr id="filter-trange">
-        <th><label for="filter-field-trange">Time range:</label></th>
-        <td>
-          <span class="provami-value"></span>
-          <select class="form-control" id="filter-field-trange">
-          </select>
-        </td>
-        <td><button class="btn btn-outline-dark btn-sm provami-remove"><span class="oi oi-delete"></span></button></td>
-      </tr>
-    </tbody>
-  </table>
-  </form>
-  <!--
-    <fieldset id="filter_fields">
-    <label for="filter-repmemo">Network</label>
-    <div class="input-group">
-      <span class="input-group-addon glyphicon glyphicon-asterisk" id="filter-repmemo-addon"></span>
-      <select class="form-control" id="filter-repmemo" aria-describedby="filter-repmemo-addon">
-      </select>
-    </div>
-    <label for="filter-var">Variable</label>
-    <div class="input-group">
-      <span class="input-group-addon glyphicon glyphicon-pencil" id="filter-var-addon"></span>
-      <select class="form-control" id="filter-var" aria-describedby="filter-var-addon">
-      </select>
-    </div>
-    <label for="filter-level">Level</label>
-    <div class="input-group">
-      <span class="input-group-addon glyphicon glyphicon-resize-vertical" id="filter-level-addon"></span>
-      <select class="form-control" id="filter-level" aria-describedby="filter-level-addon">
-      </select>
-    </div>
-    <label for="filter-trange">Time range</label>
-    <div class="input-group">
-      <span class="input-group-addon glyphicon glyphicon-resize-horizontal" id="filter-trange-addon"></span>
-      <select class="form-control" id="filter-trange" aria-describedby="filter-trange-addon">
-      </select>
-    </div>
-    </fieldset>
-    -->
+    <form id="filter">
+    <table id="filter" class="table table-borderless table-sm">
+      <tbody>
+        <tr id="filter-station">
+          <th><label for="filter-field-station">Station:</label></th>
+          <td class="provami-value">all<td>
+          <td><button class="btn btn-outline-dark btn-sm provami-remove"><span class="oi oi-delete"></span></button></td>
+        </tr>
+        <tr id="filter-rep_memo">
+          <th><label for="filter-field-rep_memo">Network:</label></th>
+          <td>
+            <span class="provami-value"></span>
+            <select class="form-control" id="filter-field-rep_memo">
+            </select>
+          </td>
+          <td><button class="btn btn-outline-dark btn-sm provami-remove"><span class="oi oi-delete"></span></button></td>
+        </tr>
+        <tr id="filter-var">
+          <th><label for="filter-field-var">Variable:</label></th>
+          <td>
+            <span class="provami-value"></span>
+            <select class="form-control" id="filter-field-var">
+            </select>
+          </td>
+          <td><button class="btn btn-outline-dark btn-sm provami-remove"><span class="oi oi-delete"></span></button></td>
+        </tr>
+        <tr id="filter-level">
+          <th><label for="filter-field-level">Level:</label></th>
+          <td>
+            <span class="provami-value"></span>
+            <select class="form-control" id="filter-field-level">
+            </select>
+          </td>
+          <td><button class="btn btn-outline-dark btn-sm provami-remove"><span class="oi oi-delete"></span></button></td>
+        </tr>
+        <tr id="filter-trange">
+          <th><label for="filter-field-trange">Time range:</label></th>
+          <td>
+            <span class="provami-value"></span>
+            <select class="form-control" id="filter-field-trange">
+            </select>
+          </td>
+          <td><button class="btn btn-outline-dark btn-sm provami-remove"><span class="oi oi-delete"></span></button></td>
+        </tr>
+      </tbody>
+    </table>
+    </form>
     <div class="text-right">
-      <div class="btn-group" role="group">
+      <div class="dropdown">
         <button id="provami-export" type="button" class="btn btn-outline-dark btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
           Export
         </button>
