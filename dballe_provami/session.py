@@ -14,6 +14,7 @@ def _tuple_to_string(t):
 
 
 def _tuple_from_string(t):
+    print("TFS", repr(t))
     if t is None:
         return None
     return tuple(int(x) if x else None for x in t.split(","))
@@ -54,8 +55,8 @@ class Filter:
         return {
             "ana_id": self.ana_id,
             "rep_memo": self.rep_memo,
-            "level": None if self.level is None else [_tuple_to_string(self.level), dballe.describe_level(*self.level)],
-            "trange": None if self.trange is None else [_tuple_to_string(self.trange), dballe.describe_trange(*self.trange)],
+            "level": None if self.level is None else [self.level, dballe.describe_level(*self.level)],
+            "trange": None if self.trange is None else [self.trange, dballe.describe_trange(*self.trange)],
             "var": self.var,
             "datemin": self.datemin.strftime("%Y-%m-%d %H:%M:%S") if self.datemin is not None else None,
             "datemax": self.datemax.strftime("%Y-%m-%d %H:%M:%S") if self.datemin is not None else None,
@@ -66,8 +67,8 @@ class Filter:
         res = cls()
         res.ana_id = data.get("ana_id")
         res.rep_memo = data.get("rep_memo")
-        res.level = _tuple_from_string(data.get("level"))
-        res.trange = _tuple_from_string(data.get("trange"))
+        res.level = data.get("level")
+        res.trange = data.get("trange")
         res.var = data.get("var")
         res.datemin = data.get("datemin")
         res.datemax = data.get("datemax")

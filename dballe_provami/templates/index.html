@@ -1,22 +1,5 @@
 {% extends "base.html" %}
 
-{% block nav %}
-  <div id="navbar" class="navbar-collapse collapse">
-    <ul class="nav navbar-nav">
-      <li class="dropdown">
-        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Export <span class="caret"></span></a>
-        <ul class="dropdown-menu">
-          <li><a href="{{ reverse_url('export', 'bufr') }}">as BUFR</a></li>
-          <li><a href="{{ reverse_url('export', 'crex') }}">as CREX</a></li>
-          <li><a href="{{ reverse_url('export', 'csv') }}">as CSV</a></li>
-        </ul>
-      </li>
-    </ul>
-    <ul class="nav navbar-nav navbar-right">
-    </ul>
-  </div><!--/.nav-collapse -->
-{% end %}
-
 {% block head %}
 <style type="text/css">
 #map { height: 30em; }
@@ -55,6 +38,11 @@
     provami = new window.provami.Provami({
       resource_url: "{{ static_url('provami/') }}",
     });
+
+    $("#jumbotron-goto-filter").click(evt => {
+      $("#tab-header-filter").tab("show");
+      evt.preventDefault();
+    });
   }
 
   async function async_main()
@@ -71,130 +59,38 @@
 {% end %}
 
 {% block body %}
-<div class="row">
-
-<div class="col-md-4">
-<div class="panel panel-default">
-  <div class="panel-heading clearfix">
-    <h2 class="panel-title">
-      <!--
-      <div class="btn-group pull-right" role="group" aria-label="filter_actions">
-        <button id="filter_update" type="button" class="btn btn-default btn-xs">Update</button>
+<div class="card">
+  <div class="card-header">
+    <ul class="nav nav-tabs card-header-tabs" role="tablist">
+      <li class="nav-item">
+        <a data-toggle="tab" role="tab" aria-controls="tab-splash" class="nav-link" id="tab-header-splash" href="#tab-splash">Provami</a>
+      </li>
+      <li class="nav-item">
+        <a data-toggle="tab" role="tab" aria-controls="tab-filter" class="nav-link active" id="tab-header-filter" href="#tab-filter">Filter</a>
+      </li>
+      <li class="nav-item">
+        <a data-toggle="tab" role="tab" aria-controls="tab-edit"   class="nav-link" id="tab-header-edit" data-toggle="tab" href="#tab-edit">Edit</a>
+      </li>
+    </ul>
+  </div>
+  <div class="card-body">
+    <div class="tab-content">
+      <div role="tabpanel" aria-labelledby="tab-header-splash" id="tab-splash" class="tab-pane">
+        <div class="container">
+          <p></p>
+          <div class="jumbotron">
+            <h1>Provami</h1>
+            <p>TODO: add a description about provami</p>
+            <p>TODO: add information (IP, database URL, version of Provami, Python, OS, and DB-All.e)</p>
+            <p><a class="btn btn-primary btn-lg" href="#" role="button" id="jumbotron-goto-filter">Explore data</a></p>
+          </div>
+        </div>
       </div>
-      -->
-      Filter
-    </h2>
-  </div>
-  <div class="panel-body">
-  <form id="filter">
-  <table id="filter" class="table">
-    <tbody>
-      <tr id="filter-station">
-        <th><label for="filter-field-station">Station:</label></th>
-        <td class="value">all<td>
-        <td><button class="btn btn-default btn-xs glyphicon glyphicon-remove remove"></button></td>
-      </tr>
-      <tr id="filter-rep_memo">
-        <th><label for="filter-field-rep_memo">Network:</label></th>
-        <td class="value">
-          <span class="value"></span>
-          <select class="form-control" id="filter-field-rep_memo">
-          </select>
-        </td>
-        <td><button class="btn btn-default btn-xs glyphicon glyphicon-remove remove"></button></td>
-      </tr>
-      <tr id="filter-var">
-        <th><label for="filter-field-var">Variable:</label></th>
-        <td class="value">
-          <span class="value"></span>
-          <select class="form-control" id="filter-field-var">
-          </select>
-        </td>
-        <td><button class="btn btn-default btn-xs glyphicon glyphicon-remove remove"></button></td>
-      </tr>
-      <tr id="filter-level">
-        <th><label for="filter-field-level">Level:</label></th>
-        <td class="value">
-          <span class="value"></span>
-          <select class="form-control" id="filter-field-level">
-          </select>
-        </td>
-        <td><button class="btn btn-default btn-xs glyphicon glyphicon-remove remove"></button></td>
-      </tr>
-      <tr id="filter-trange">
-        <th><label for="filter-field-trange">Time range:</label></th>
-        <td class="value">
-          <span class="value"></span>
-          <select class="form-control" id="filter-field-trange">
-          </select>
-        </td>
-        <td><button class="btn btn-default btn-xs glyphicon glyphicon-remove remove"></button></td>
-      </tr>
-    </tbody>
-  </table>
-  </form>
-  <!--
-    <fieldset id="filter_fields">
-    <label for="filter-repmemo">Network</label>
-    <div class="input-group">
-      <span class="input-group-addon glyphicon glyphicon-asterisk" id="filter-repmemo-addon"></span>
-      <select class="form-control" id="filter-repmemo" aria-describedby="filter-repmemo-addon">
-      </select>
-    </div>
-    <label for="filter-var">Variable</label>
-    <div class="input-group">
-      <span class="input-group-addon glyphicon glyphicon-pencil" id="filter-var-addon"></span>
-      <select class="form-control" id="filter-var" aria-describedby="filter-var-addon">
-      </select>
-    </div>
-    <label for="filter-level">Level</label>
-    <div class="input-group">
-      <span class="input-group-addon glyphicon glyphicon-resize-vertical" id="filter-level-addon"></span>
-      <select class="form-control" id="filter-level" aria-describedby="filter-level-addon">
-      </select>
-    </div>
-    <label for="filter-trange">Time range</label>
-    <div class="input-group">
-      <span class="input-group-addon glyphicon glyphicon-resize-horizontal" id="filter-trange-addon"></span>
-      <select class="form-control" id="filter-trange" aria-describedby="filter-trange-addon">
-      </select>
-    </div>
-    </fieldset>
-    -->
-  </div>
-</div>
-</div>
-
-<div class="col-md-8">
-  <div class="panel panel-default">
-    <div class="panel-heading">Stations</div>
-    <div class="panel-body" id="map">
-    </div>
-  </div>
-</div>
-
-</div>
-
-<div class="row">
-  <div class="col-md-12">
-    <div class="panel panel-default">
-      <div class="panel-heading">Data</div>
-      <div class="panel-body">
-        <table id="data" class="table table-striped">
-          <thead>
-            <tr>
-              <th>Network</th>
-              <th>Station</th>
-              <th>Variable</th>
-              <th>Level</th>
-              <th>Time range</th>
-              <th>Datetime</th>
-              <th>Value</th>
-            </tr>
-          </thead>
-          <tbody>
-          </tbody>
-        </table>
+      <div role="tabpanel" aria-labelledby="tab-header-filter" id="tab-filter" class="tab-pane active">
+        {% include "tab-filter.html" %}
+      </div>
+      <div role="tabpanel" aria-labelledby="tab-header-edit" id="tab-edit" class="tab-pane">
+        TODO: edit
       </div>
     </div>
   </div>

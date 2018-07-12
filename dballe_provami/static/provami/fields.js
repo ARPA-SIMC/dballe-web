@@ -8,8 +8,8 @@ class FilterField
     {
         this.filters = filters
         this.name = name;
-        this.row = $("#filter-" + this.name);
-        this.remove = this.row.find("button.remove").hide();
+        this.container = $("#filter-" + this.name);
+        this.remove = this.container.find(".provami-remove").hide();
         this.value = null;
         this.remove.click(evt => { this.unset(); });
     }
@@ -25,7 +25,7 @@ class FilterFieldStation extends FilterField
         super(filters, "station");
         this.map = filters.provami.map;
         this.map.controllers.push(this);
-        this.field_value = this.row.find("td.value");
+        this.field_value = this.container.find(".provami-value");
     }
 
     unset()
@@ -119,9 +119,8 @@ class FilterFieldChoices extends FilterField
         // Only one available option, mark it as hardcoded
         value = this._get_option(value);
         this.value = {};
-        this.value[this.name] = value;
         this.remove.hide();
-        this.row.find("td.value span.value").text(value[1]).show();
+        this.container.find(".provami-value").text(value[1]).show();
         this.field.hide();
     }
 
@@ -141,7 +140,7 @@ class FilterFieldChoices extends FilterField
         }
 
         this.remove.hide();
-        this.row.find("td.value span.value").hide();
+        this.container.find(".provami-value").hide();
         this.field.show();
     }
 
@@ -150,9 +149,9 @@ class FilterFieldChoices extends FilterField
         // Chosen: show the choice
         value = this._get_option(value);
         this.value = {};
-        this.value[this.name] = value;
+        this.value[this.name] = value[0];
         this.remove.show();
-        this.row.find("td.value span.value").text(value[1]).show();
+        this.container.find(".provami-value").text(value[1]).show();
         this.field.hide();
     }
 
@@ -160,6 +159,7 @@ class FilterFieldChoices extends FilterField
     {
         let current = explorer.filter[this.name];
         let options = explorer[this.name];
+        console.log("FILTER", this.name, options, current)
         if (current == null)
         {
             // Not currently chosen
