@@ -95,7 +95,7 @@ class Map
         this.map.on("boxselected", (e) => {
             $.each(this.controllers, (idx, c) => { c.select_station_bounds(e.bounds, true); });
         });
-        this.initial = true;
+        this.needs_zoom_to_fit = true;
     }
 
     _make_alt_icon(type)
@@ -156,14 +156,32 @@ class Map
     {
         // Compute the bounding box of the points
         let points = [];
+
+        // First try only with the selected stations
         for (const k in this.stations.stations)
         {
             const station = this.stations.stations[k];
             if (!station.current) continue;
             points.push([station.lat, station.lon]);
         }
-        let bounds = L.latLngBounds(points);
-        this.map.fitBounds(bounds);
+
+        // If there are none, try with all stations
+        if (!points.length)
+        {
+            for (const k in this.stations.stations)
+            {
+                const station = this.stations.stations[k];
+                points.push([station.lat, station.lon]);
+            }
+        }
+
+        if (points.length)
+        {
+            let bounds = L.latLngBounds(points);
+            this.map.fitBounds(bounds);
+            this.needs_zoom_to_fit = false;
+        } else
+            this.needs_zoom_to_fit = true;
     }
 
     update_explorer(explorer)
@@ -183,11 +201,8 @@ class Map
             this.markers_layer.refreshClusters();
         }
 
-        if (this.initial)
-        {
+        if (this.needs_zoom_to_fit)
             this.zoom_to_fit();
-            this.initial = false;
-        }
     }
 }
 

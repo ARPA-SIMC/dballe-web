@@ -29,6 +29,10 @@ class Filter:
         self.var = None
         self.datemin = None
         self.datemax = None
+        self.latmin = None
+        self.latmax = None
+        self.lonmin = None
+        self.lonmax = None
 
     def to_tuple(self, o):
         return (self.ana_id, self.rep_memo, self.level, self.trange, self.var, self.datemin, self.datemax)
@@ -49,6 +53,14 @@ class Filter:
             res["datemin"] = self.datemin
         if self.datemax is not None:
             res["datemax"] = self.datemax
+        if self.latmin is not None:
+            res["latmin"] = float(self.latmin)
+        if self.latmax is not None:
+            res["latmax"] = float(self.latmax)
+        if self.lonmin is not None:
+            res["lonmin"] = float(self.lonmin)
+        if self.lonmax is not None:
+            res["lonmax"] = float(self.lonmax)
         return res
 
     def to_dict(self):
@@ -60,6 +72,10 @@ class Filter:
             "var": self.var,
             "datemin": self.datemin.strftime("%Y-%m-%d %H:%M:%S") if self.datemin is not None else None,
             "datemax": self.datemax.strftime("%Y-%m-%d %H:%M:%S") if self.datemin is not None else None,
+            "latmin": self.latmin,
+            "latmax": self.latmax,
+            "lonmin": self.lonmin,
+            "lonmax": self.lonmax,
         }
 
     @classmethod
@@ -72,6 +88,10 @@ class Filter:
         res.var = data.get("var")
         res.datemin = data.get("datemin")
         res.datemax = data.get("datemax")
+        res.latmin = data.get("latmin")
+        res.latmax = data.get("latmax")
+        res.lonmin = data.get("lonmin")
+        res.lonmax = data.get("lonmax")
         return res
 
 

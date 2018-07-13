@@ -46,33 +46,36 @@ class FilterFieldStation extends FilterField
         return strs.join(" ");
     }
 
+    _set_value(filters)
+    {
+        this.field_value.text(this._filters_to_text(filters));
+        this.value = {};
+        for (let f of filters)
+            this.value[f[0]] = f[1];
+        this.remove.show();
+    }
+
     select_station(info)
     {
-        console.log("Selected", info);
         var filters = [
             ["ana_id", info.id],
         ];
-        this.field_value.text(this._filters_to_text(filters));
-        this.value = {};
-        this.remove.show();
-        for (let f of filters)
-            this.value[f[0]] = f[1];
+        this._set_value(filters);
         this.filters.update_filter().then();
     }
 
     select_station_bounds(bounds, finished)
     {
-        console.log("Bounds", bounds, finished);
         var filters = [
             ["latmin", bounds._southWest.lat.toFixed(5)],
             ["latmax", bounds._northEast.lat.toFixed(5)],
-            ["lonmin", bounds._northEast.lng.toFixed(5)],
-            ["lonmax", bounds._southWest.lng.toFixed(5)],
+            ["lonmin", bounds._southWest.lng.toFixed(5)],
+            ["lonmax", bounds._northEast.lng.toFixed(5)],
         ];
         if (finished)
         {
-            this.field_value.text(this._filters_to_text(filters));
-            this.remove.show();
+            this._set_value(filters);
+            this.filters.update_filter().then();
         }
         else
             this.field_value.html(`<i>${this._filters_to_text(filters)}</i>`);
@@ -81,6 +84,23 @@ class FilterFieldStation extends FilterField
     update_explorer(explorer)
     {
         this.map.update_explorer(explorer);
+        if (explorer.filter.ana_id)
+        {
+            this._set_value([
+                ["ana_id", explorer.filter.ana_id],
+            ]);
+        }
+        else if (explorer.filter.latmin)
+        {
+            this._set_value([
+                ["latmin", parseFloat(explorer.filter.latmin)],
+                ["latmax", parseFloat(explorer.filter.latmax)],
+                ["lonmin", parseFloat(explorer.filter.lonmin)],
+                ["lonmax", parseFloat(explorer.filter.lonmax)],
+            ]);
+        }
+        else
+            this.value = {}
     }
 }
 
@@ -159,7 +179,6 @@ class FilterFieldChoices extends FilterField
     {
         let current = explorer.filter[this.name];
         let options = explorer[this.name];
-        console.log("FILTER", this.name, options, current)
         if (current == null)
         {
             // Not currently chosen
@@ -202,7 +221,7 @@ class Filters
      */
     update_explorer(explorer)
     {
-        console.log("New explorer state:", explorer);
+        console.log("Filters: new explorer state:", explorer);
 
         $.each(this.fields, (idx, el) => {
             el.update_explorer(explorer);
@@ -221,7 +240,7 @@ class Filters
         let filter = {};
         for (let field of this.fields)
             Object.assign(filter, field.value);
-        console.log("Set new filter", filter);
+        console.log("Filters: set new filter", filter);
         await this.provami.set_filter(filter);
     }
 }
