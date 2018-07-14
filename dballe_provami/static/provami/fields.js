@@ -115,8 +115,10 @@ class FilterFieldChoices extends FilterField
         super(filters, name);
         this.field = $("#filter-field-" + name);
         this.field.change(evt => {
+            let option = $(evt.target).find("option:selected");
+            const value = option.data("dballe_value");
             this.value = {};
-            this.value[this.name] = this.field.val();
+            this.value[this.name] = value;
             this.filters.update_filter().then();
         });
     }
@@ -155,7 +157,7 @@ class FilterFieldChoices extends FilterField
         for (var i = 0; i < options.length; ++i)
         {
             var o = this._get_option(options[i]);
-            var opt = $("<option>").attr("value", o[0]).text(o[1]);
+            var opt = $("<option>").attr("value", o[0]).text(o[1]).data("dballe_value", o[0]);
             this.field.append(opt);
         }
 
