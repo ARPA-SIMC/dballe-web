@@ -92,6 +92,7 @@ class Provami
         this.server = new window.provami.Server();
         this.map = new window.provami.Map("map", options);
         this.filters = new window.provami.Filters(this);
+	this.data = new window.provami.Data(this);
     }
 
     async init()
@@ -122,31 +123,15 @@ class Provami
     async update_data()
     {
         var data = await this.server.get_data();
-
-        var tbody = $("#data tbody");
-        tbody.empty();
-
-        for (var i = 0; i < data.rows.length; ++i)
-        {
-            var row = data.rows[i];
-            var tr = $("<tr>");
-            tr.append($("<td>").text(row[0]));
-            tr.append($("<td>").text(row[1]));
-            tr.append($("<td>").text(row[2]));
-            tr.append($("<td>").text(row[3]));
-            tr.append($("<td>").text(row[4]));
-            tr.append($("<td>").text(row[5]));
-            tr.append($("<td>").text(row[6]));
-            tbody.append(tr);
-        }
+	this.data.update(data);
     }
 
-    /*
-    async update_all()
+    async set_value(id, value)
     {
-        await Promise.all([this.update_filter(), this.update_data()]);
+	console.log("UPDATE", id, value);
+	// TODO: send it to server
+	// TODO: update data
     }
-    */
 }
 
 window.provami = $.extend(window.provami || {}, {

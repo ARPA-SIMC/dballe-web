@@ -206,6 +206,7 @@ class Session:
             res = []
             for rec in self.db.query_data(query):
                 res.append([
+                    rec["context_id"],
                     rec["rep_memo"],
                     rec["ana_id"],
                     rec["var"],
@@ -217,3 +218,17 @@ class Session:
             return res
         records = await self.loop.run_in_executor(self.executor, _get_data)
         return records
+
+    async def update_value(self, id, value):
+        log.debug("Session.update_value %d %s", id, value)
+        #self.db.insert_data(
+        # DataValues vals;
+        # vals.info.id = val.ana_id;
+        # vals.info.report = val.rep_memo;
+        # vals.info.level = val.level;
+        # vals.info.trange = val.trange;
+        # vals.info.datetime = val.date;
+        # vals.values.set(new_val);
+        # db->insert_data(vals, true, false);
+        # val.var = new_val;
+
