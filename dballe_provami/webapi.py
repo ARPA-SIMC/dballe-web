@@ -65,3 +65,8 @@ class WebAPI:
         return {
             "explorer": await self.session.set_filter(filter),
         }
+
+    async def do_replace_data(self, rec, **kw):
+        return {
+            "rows": await self.session.replace_data(rec),
+        }

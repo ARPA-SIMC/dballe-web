@@ -4,47 +4,83 @@
 
 class Editor
 {
-    constructor(provami, td)
+    constructor(provami, td, dballe_data)
     {
         this.provami = provami;
         this.td = td;
-        this.orig = this.td.text();
-        this.editor = $("<input type='text' size='10'>").val(this.orig);
-        this.editor.change(evt => { this.on_change(evt) });
+        this.dballe_data = dballe_data;
+        if (dballe_data.vt == "decimal")
+        {
+            const step = 10 ** (-dballe_data.vs);
+            this.editor = $(`<input class='data_editor' type='number' step='${step}' required>`);
+        }
+        else if (dballe_data.vt == "integer")
+        {
+            const step = 10 ** (-dballe_data.vs);
+            this.editor = $(`<input class='data_editor' type='number' step='${step}' required>`);
+        }
+        else
+            this.editor = $("<input class='data_editor' type='text' size='10' required>");
+        this.editor.val(this.dballe_data.v);
         this.editor.keyup(evt => { this.on_keyup(evt) });
+        this.editor.blur(evt => { this.on_blur(evt) });
         this.td.empty().append(this.editor);
         this.td.data("provami_editor", this.editor);
         this.editor.focus();
     }
 
     // Cancel the editing and restore the TD as it was
-    abort()
+    rollback()
     {
-        this.td.empty().text(orig).removeData("provami_editor");
+        this.td.empty().text(this.dballe_data.v).removeData("provami_editor");
     }
 
-    on_change(evt)
+    // Save the new value
+    commit()
     {
-        if (this.editor.val() == this.orig)
-        {
-            this.abort();
-            evt.preventDefault();
-            return;
-        }
-        // TODO: collect station ID, datetime, level, time range, varcode, from the row
-        this.provami.set_value({}, this.editor.val()).then();
+        var value = this.editor.val();
+
+        const rec = {
+            ana_id: this.dballe_data.s,
+            varcode: this.dballe_data.c,
+            level: this.dballe_data.l,
+            trange: this.dballe_data.t,
+            datetime: this.dballe_data.d,
+            vt: this.dballe_data.vt,
+        };
+        if (this.dballe_data.vt == "decimal")
+            rec.value = parseFloat(value)
+        else if (this.dballe_data.vt == "decimal")
+            rec.value = parseInt(value)
+        else
+            rec.value = value;
+
+        this.td.empty().text(value).removeData("provami_editor");
+        this.provami.replace_data(rec).then();
     }
 
     on_keyup(evt)
     {
         if (evt.keyCode == 27) // ESC
         {
-            this.abort();
+            this.rollback();
             evt.preventDefault();
-        } else if (evt.keyCode == 13 && editor.val() == orig) { // Enter
-            this.abort();
+        } else if (evt.keyCode == 13) { // Enter
+            if (this.editor.val() == this.dballe_data.v)
+                this.rollback();
+            else
+                this.commit();
             evt.preventDefault();
         }
+        // TODO: move one row above/below with arrows?
+    }
+
+    on_blur(evt)
+    {
+        if (this.editor.val() == this.dballe_data.v)
+            this.rollback();
+        else
+            this.commit();
     }
 }
 
@@ -56,12 +92,11 @@ class Data
         this.tbody = $("#data tbody");
         this.tbody.on("click", "td", evt => {
             let idx = evt.target.cellIndex;
-            let id = $(evt.target.parentNode).data("dballe-id");
             let el = $(evt.target);
-            console.log(idx, id, evt, el)
             if (idx == 6 && !el.data("provami_editor"))
             {
-                new Editor(this.provami, el);
+                let data = $(evt.target.parentNode).data("dballe_data");
+                new Editor(this.provami, el, data);
             }
         });
     }
@@ -73,14 +108,14 @@ class Data
         for (var i = 0; i < data.rows.length; ++i)
         {
             var row = data.rows[i];
-            var tr = $("<tr>").data("dballe-id", row[0]);
-            tr.append($("<td>").text(row[1]));
-            tr.append($("<td>").text(row[2]));
-            tr.append($("<td>").text(row[3]));
-            tr.append($("<td>").text(row[4]));
-            tr.append($("<td>").text(row[5]));
-            tr.append($("<td>").text(row[6]));
-            tr.append($("<td>").text(row[7]));
+            var tr = $("<tr class='d-flex'>").data("dballe_data", row);
+            tr.append($("<td class='col-2'>").text(row.r));
+            tr.append($("<td class='col-1'>").text(row.s));
+            tr.append($("<td class='col-1'>").text(row.c));
+            tr.append($("<td class='col-2'>").text(row.l));
+            tr.append($("<td class='col-2'>").text(row.t));
+            tr.append($("<td class='col-2'>").text(row.d));
+            tr.append($("<td class='col-2'>").text(row.v));
             this.tbody.append(tr);
         }
     }

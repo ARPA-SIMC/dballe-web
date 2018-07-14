@@ -1,23 +1,11 @@
 import dballe
 from dballe import dbacsv
+import datetime
 import asyncio
 import concurrent.futures
 import logging
 
 log = logging.getLogger(__name__)
-
-
-def _tuple_to_string(t):
-    if t is None:
-        return None
-    return ",".join(str(x) if x is not None else "" for x in t)
-
-
-def _tuple_from_string(t):
-    print("TFS", repr(t))
-    if t is None:
-        return None
-    return tuple(int(x) if x else None for x in t.split(","))
 
 
 class Filter:
@@ -205,30 +193,37 @@ class Session:
                 query["limit"] = limit
             res = []
             for rec in self.db.query_data(query):
-                res.append([
-                    rec["context_id"],
-                    rec["rep_memo"],
-                    rec["ana_id"],
-                    rec["var"],
-                    tuple(rec["level"]),
-                    tuple(rec["trange"]),
-                    rec["datetime"].strftime("%Y-%m-%d %H:%M:%S"),
-                    rec[rec["var"]],
-                ])
+                var = rec.var(rec["var"])
+                row = {
+                    "i": rec["context_id"],
+                    "r": rec["rep_memo"],
+                    "s": rec["ana_id"],
+                    "c": rec["var"],
+                    "l": tuple(rec["level"]),
+                    "t": tuple(rec["trange"]),
+                    "d": rec["datetime"].strftime("%Y-%m-%d %H:%M:%S"),
+                    "v": var.enq(),
+                    "vt": var.info.type,
+                }
+                if var.info.type in ("integer", "decimal"):
+                    row["vs"] = var.info.scale
+                res.append(row)
             return res
         records = await self.loop.run_in_executor(self.executor, _get_data)
         return records
 
-    async def update_value(self, id, value):
-        log.debug("Session.update_value %d %s", id, value)
-        #self.db.insert_data(
-        # DataValues vals;
-        # vals.info.id = val.ana_id;
-        # vals.info.report = val.rep_memo;
-        # vals.info.level = val.level;
-        # vals.info.trange = val.trange;
-        # vals.info.datetime = val.date;
-        # vals.values.set(new_val);
-        # db->insert_data(vals, true, false);
-        # val.var = new_val;
-
+    async def replace_data(self, rec):
+        log.debug("Session.update_value %r", rec)
+        r = dballe.Record()
+        r["ana_id"] = int(rec["ana_id"])
+        r["level"] = tuple(rec["level"])
+        r["trange"] = tuple(rec["trange"])
+        r["datetime"] = datetime.datetime.strptime(rec["datetime"], "%Y-%m-%d %H:%M:%S")
+        if rec["vt"] == "decimal":
+            r[rec["varcode"]] = float(rec["value"])
+        elif rec["vt"] == "integer":
+            r[rec["varcode"]] = int(rec["value"])
+        else:
+            r[rec["varcode"]] = rec["value"]
+        self.db.insert_data(r, can_replace=True, can_add_stations=False)
+        return await self.get_data()

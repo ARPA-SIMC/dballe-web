@@ -82,6 +82,10 @@ class Server
     async set_filter(filter) {
         return await this._post("set_filter", {filter: filter});
     }
+
+    async replace_data(rec) {
+        return await this._post("replace_data", {rec: rec});
+    }
 }
 
 class Provami
@@ -126,11 +130,11 @@ class Provami
 	this.data.update(data);
     }
 
-    async set_value(id, value)
+    async replace_data(rec)
     {
-	console.log("UPDATE", id, value);
-	// TODO: send it to server
-	// TODO: update data
+	console.log("replace_data", rec);
+	var data = await this.server.replace_data(rec);
+	this.data.update(data);
     }
 }
 
