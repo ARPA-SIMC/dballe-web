@@ -99,6 +99,12 @@ class Data
                 new Editor(this.provami, el, data);
             }
         });
+        this.data_limit = $("#data-limit");
+        this.data_limit.change(evt => {
+            let limit = this.data_limit.val();
+            limit = limit == "unlimited" ? null : parseInt(limit);
+            this.provami.set_data_limit(limit).then();
+        });
     }
 
     update(data)

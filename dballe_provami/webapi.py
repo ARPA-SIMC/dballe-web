@@ -70,3 +70,8 @@ class WebAPI:
         return {
             "rows": await self.session.replace_data(rec),
         }
+
+    async def do_set_data_limit(self, limit, **kw):
+        return {
+            "rows": await self.session.set_data_limit(limit),
+        }

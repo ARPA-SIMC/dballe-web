@@ -86,7 +86,31 @@
 
 
 <div class="card">
-  <div class="card-header">Data</div>
+  <div class="card-header d-flex">
+    <div class="">Data</div>
+    <div class="ml-auto">
+      <!--
+      <div class="btn-group btn-group-sm btn-group-toggle" data-toggle="buttons">
+        <label class="btn btn-sm btn-secondary active">
+          <input type="radio" name="options" id="option1" autocomplete="off" checked> Active
+        </label>
+        <label class="btn btn-sm btn-secondary">
+          <input type="radio" name="options" id="option2" autocomplete="off"> Radio
+        </label>
+        <label class="btn btn-sm btn-secondary">
+          <input type="radio" name="options" id="option3" autocomplete="off"> Radio
+        </label>
+      </div>
+      -->
+      <label for="data-limit">Results:</label>
+      <select id="data-limit" class="form-control-sm m-0 p-0 border-0">
+        <option value="20" class="m-0 p-0">20</option>
+        <option value="50" class="m-0 p-0">50</option>
+        <option value="100" class="m-0 p-0">100</option>
+        <option value="unlimited" class="m-0 p-0">unlimited</option>
+      </select>
+    </div>
+  </div>
   <table id="data" class="table table-hover table-sm">
     <thead>
       <tr class="d-flex">

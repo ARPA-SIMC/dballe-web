@@ -86,6 +86,10 @@ class Server
     async replace_data(rec) {
         return await this._post("replace_data", {rec: rec});
     }
+
+    async set_data_limit(limit) {
+        return await this._post("set_data_limit", {limit: limit});
+    }
 }
 
 class Provami
@@ -134,6 +138,13 @@ class Provami
     {
 	console.log("replace_data", rec);
 	var data = await this.server.replace_data(rec);
+	this.data.update(data);
+    }
+
+    async set_data_limit(limit)
+    {
+	console.log("set_data_limit", limit);
+	var data = await this.server.set_data_limit(limit);
 	this.data.update(data);
     }
 }

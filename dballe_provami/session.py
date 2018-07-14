@@ -112,6 +112,7 @@ class Session:
         self.db_url = db_url
         self.db = dballe.DB.connect_from_url(self.db_url)
         self.filter = Filter()
+        self.data_limit = 20
         self.explorer = dballe.Explorer()
         self.initialized = False
         self._revalidate = Revalidator(self)
@@ -147,6 +148,7 @@ class Session:
             # "datemin": self.datemin.strftime("%Y-%m-%d %H:%M:%S") if self.datemin is not None else None,
             # "datemax": self.datemax.strftime("%Y-%m-%d %H:%M:%S") if self.datemin is not None else None,
             "initialized": self.initialized,
+            "data_limit": self.data_limit,
         }
 
     async def export(self, format, out):
@@ -184,13 +186,13 @@ class Session:
         await self._revalidate()
         return self.explorer_to_dict()
 
-    async def get_data(self, limit=20):
+    async def get_data(self):
         log.debug("Session.get_data")
 
         def _get_data():
             query = self.filter.to_record()
-            if limit is not None:
-                query["limit"] = limit
+            if self.data_limit is not None:
+                query["limit"] = self.data_limit
             res = []
             for rec in self.db.query_data(query):
                 var = rec.var(rec["var"])
@@ -226,4 +228,9 @@ class Session:
         else:
             r[rec["varcode"]] = rec["value"]
         self.db.insert_data(r, can_replace=True, can_add_stations=False)
+        return await self.get_data()
+
+    async def set_data_limit(self, limit):
+        log.debug("Session.set_data_limit %r", limit)
+        self.data_limit = int(limit) if limit else None
         return await self.get_data()
