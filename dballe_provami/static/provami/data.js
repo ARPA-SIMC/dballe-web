@@ -91,12 +91,15 @@ class Data
         this.provami = provami;
         this.tbody = $("#data tbody");
         this.tbody.on("click", "td", evt => {
+            let data = $(evt.target.parentNode).data("dballe_data");
             let idx = evt.target.cellIndex;
             let el = $(evt.target);
             if (idx == 6 && !el.data("provami_editor"))
             {
-                let data = $(evt.target.parentNode).data("dballe_data");
                 new Editor(this.provami, el, data);
+            } else {
+                this.provami.show_station_data(data.s).then();
+                this.provami.show_data_attrs(data.i).then();
             }
         });
         this.data_limit = $("#data-limit");

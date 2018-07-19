@@ -144,6 +144,16 @@ class Provami
 	var data = await this.server.set_data_limit(limit);
 	this.data.update(data);
     }
+
+    async show_station_data(id_station)
+    {
+        console.log("show_station_data", id_station);
+    }
+
+    async show_data_attrs(id)
+    {
+        console.log("show_data_attrs", id);
+    }
 }
 
 window.provami = $.extend(window.provami || {}, {
