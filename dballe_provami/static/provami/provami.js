@@ -120,12 +120,7 @@ class Provami
     update_explorer(explorer)
     {
         this.filters.update_explorer(explorer);
-            // "filter": self.filter.to_dict(),
-            // "stations": self.explorer.stations,
-            // "rep_memo": self.explorer.reports,
-            // "level": [(tuple(x), dballe.describe_level(*x)) for x in self.explorer.levels],
-            // "trange": [(tuple(x), dballe.describe_trange(*x)) for x in self.explorer.tranges],
-            // "var": self.explorer.varcodes,
+        $("#data-count").text(explorer.stats.count);
     }
 
     async update_data()
