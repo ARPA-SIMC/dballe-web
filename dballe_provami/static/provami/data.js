@@ -125,6 +125,11 @@ class Data
             this.tbody.append(tr);
         }
     }
+
+    update_explorer(explorer)
+    {
+        $("#data-count").text(explorer.stats.count);
+    }
 }
 
 window.provami = $.extend(window.provami || {}, {

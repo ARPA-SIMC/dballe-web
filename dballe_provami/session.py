@@ -3,6 +3,7 @@ from dballe import dbacsv
 import datetime
 import asyncio
 import concurrent.futures
+import shlex
 import logging
 
 log = logging.getLogger(__name__)
@@ -151,6 +152,7 @@ class Session:
 
         return {
             "filter": self.filter.to_dict(),
+            "filter_cmdline": " ".join(shlex.quote("{}={}".format(k, v)) for k, v in self.filter.to_record().items()),
             "stations": stations,
             "stations_disabled": stations_disabled,
             "rep_memo": self.explorer.reports,
@@ -164,6 +166,7 @@ class Session:
             },
             "initialized": self.initialized,
             "data_limit": self.data_limit,
+            "db_url": self.db_url,
         }
 
     async def export(self, format, out):

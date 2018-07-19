@@ -1,0 +1,58 @@
+<div class="card-body">
+  <form id="filter">
+  <table id="filter" class="table table-borderless table-sm">
+    <tbody>
+      <tr id="filter-station">
+        <th><label for="filter-field-station">Station:</label></th>
+        <td class="provami-value">all<td>
+        <td><button class="btn btn-outline-dark btn-sm provami-remove"><span class="oi oi-delete"></span></button></td>
+      </tr>
+      <tr id="filter-rep_memo">
+        <th><label for="filter-field-rep_memo">Network:</label></th>
+        <td>
+          <span class="provami-value"></span>
+          <select class="form-control" id="filter-field-rep_memo">
+          </select>
+        </td>
+        <td><button class="btn btn-outline-dark btn-sm provami-remove"><span class="oi oi-delete"></span></button></td>
+      </tr>
+      <tr id="filter-var">
+        <th><label for="filter-field-var">Variable:</label></th>
+        <td>
+          <span class="provami-value"></span>
+          <select class="form-control" id="filter-field-var">
+          </select>
+        </td>
+        <td><button class="btn btn-outline-dark btn-sm provami-remove"><span class="oi oi-delete"></span></button></td>
+      </tr>
+      <tr id="filter-level">
+        <th><label for="filter-field-level">Level:</label></th>
+        <td>
+          <span class="provami-value"></span>
+          <select class="form-control" id="filter-field-level">
+          </select>
+        </td>
+        <td><button class="btn btn-outline-dark btn-sm provami-remove"><span class="oi oi-delete"></span></button></td>
+      </tr>
+      <tr id="filter-trange">
+        <th><label for="filter-field-trange">Time range:</label></th>
+        <td>
+          <span class="provami-value"></span>
+          <select class="form-control" id="filter-field-trange">
+          </select>
+        </td>
+        <td><button class="btn btn-outline-dark btn-sm provami-remove"><span class="oi oi-delete"></span></button></td>
+      </tr>
+      <tr id="filter-datetime">
+        <th class="align-middle"><label for="filter-field-datetime">Date time:</label></th>
+        <td>
+          <span class="provami-value"></span>
+          <input type="text" class="form-control" id="filter-field-datetime-min" pattern="[0-9]+(?:-[0-9]+(?:-[0-9]+(?: [0-9]+(?::[0-9]+(?::[0-9]+)?)?)?)?)?"></input>
+          <input type="text" class="form-control" id="filter-field-datetime-max" pattern="[0-9]+(?:-[0-9]+(?:-[0-9]+(?: [0-9]+(?::[0-9]+(?::[0-9]+)?)?)?)?)?"></input>
+        </td>
+        <td class="align-middle"><button class="btn btn-outline-dark btn-sm provami-remove"><span class="oi oi-delete"></span></button></td>
+      </tr>
+    </tbody>
+  </table>
+  </form>
+</div>

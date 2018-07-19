@@ -120,7 +120,9 @@ class Provami
     update_explorer(explorer)
     {
         this.filters.update_explorer(explorer);
-        $("#data-count").text(explorer.stats.count);
+        this.data.update_explorer(explorer);
+        $(".provami-view-url").text(explorer.db_url);
+        $(".provami-view-filter-cmdline").text(explorer.filter_cmdline);
     }
 
     async update_data()

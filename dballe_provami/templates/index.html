@@ -70,7 +70,7 @@ input.data_editor {
 {% block body %}
 <div class="card">
   <div class="card-header">
-    <ul class="nav nav-tabs card-header-tabs" role="tablist">
+    <ul class="nav nav-tabs card-header-tabs d-flex" role="tablist">
       <li class="nav-item">
         <a data-toggle="tab" role="tab" aria-controls="tab-splash" class="nav-link" id="tab-header-splash" href="#tab-splash">Provami</a>
       </li>
@@ -78,7 +78,7 @@ input.data_editor {
         <a data-toggle="tab" role="tab" aria-controls="tab-filter" class="nav-link active" id="tab-header-filter" href="#tab-filter">Explore</a>
       </li>
       <li class="nav-item">
-        <a data-toggle="tab" role="tab" aria-controls="tab-edit"   class="nav-link" id="tab-header-edit" data-toggle="tab" href="#tab-edit">Edit</a>
+        <a data-toggle="tab" role="tab" aria-controls="tab-export"   class="nav-link" id="tab-header-export" data-toggle="tab" href="#tab-export">Export</a>
       </li>
     </ul>
   </div>
@@ -86,23 +86,38 @@ input.data_editor {
     <div class="tab-content">
       <div role="tabpanel" aria-labelledby="tab-header-splash" id="tab-splash" class="tab-pane">
         <div class="container">
-          <p></p>
-          <div class="jumbotron">
-            <h1>Provami</h1>
-            <p>TODO: add a description about provami</p>
-            <p>TODO: add information (IP, database URL, version of Provami, Python, OS, and DB-All.e)</p>
-            <p><a class="btn btn-primary btn-lg" href="#" role="button" id="jumbotron-goto-filter">Explore data</a></p>
-          </div>
+          {% include "provami-splash.html" %}
         </div>
       </div>
       <div role="tabpanel" aria-labelledby="tab-header-filter" id="tab-filter" class="tab-pane active">
-        {% include "tab-filter.html" %}
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-sm-4">
+              <div class="card">
+                <div class="card-header d-flex">
+                  <div>Filter</div>
+                </div>
+                {% include "provami-filter.html" %}
+              </div>
+            </div>
+            <div class="col-lg">
+              <div class="card">
+                <div class="card-header">Stations</div>
+                <div class="card-body" id="map">
+                </div>
+              </div>
+            </div>
+          </div> <!-- /div class="row" -->
+
+          <div class="card">
+            {% include "provami-data.html" %}
+          </div>
+        </div> <!-- /div class="container-fluid" -->
       </div>
-      <div role="tabpanel" aria-labelledby="tab-header-edit" id="tab-edit" class="tab-pane">
-        TODO: edit
+      <div role="tabpanel" aria-labelledby="tab-header-export" id="tab-export" class="tab-pane">
+        {% include "provami-export.html" %}
       </div>
     </div>
   </div>
 </div>
-
 {% end %}
