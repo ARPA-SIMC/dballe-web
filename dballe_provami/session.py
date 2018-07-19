@@ -212,21 +212,73 @@ class Session:
             if self.data_limit is not None:
                 query["limit"] = self.data_limit
             res = []
-            for rec in self.db.query_data(query):
-                var = rec.var(rec["var"])
+            with self.db.transaction() as tr:
+                for rec in tr.query_data(query):
+                    var = rec.var(rec["var"])
+                    row = {
+                        "i": rec["context_id"],
+                        "r": rec["rep_memo"],
+                        "s": rec["ana_id"],
+                        "c": rec["var"],
+                        "l": tuple(rec["level"]),
+                        "t": tuple(rec["trange"]),
+                        "d": _export_datetime(rec["datetime"]),
+                        "v": var.enq(),
+                        "vt": var.info.type,
+                    }
+                    if var.info.type in ("integer", "decimal"):
+                        row["vs"] = var.info.scale
+                    res.append(row)
+            return res
+        records = await self.loop.run_in_executor(self.executor, _get_data)
+        return records
+
+    async def get_station_data(self, id_station):
+        def _get_data():
+            query = dballe.Record()
+            query["ana_id"] = id_station
+            res = []
+            with self.db.transaction() as tr:
+                for rec in tr.query_station_data(query):
+                    var = rec.var(rec["var"])
+                    row = {
+                        "i": rec["context_id"],
+                        "c": rec["var"],
+                        "v": var.enq(),
+                        "vt": var.info.type,
+                    }
+                    res.append(row)
+                    return res
+        records = await self.loop.run_in_executor(self.executor, _get_data)
+        return records
+
+    async def get_station_data_attrs(self, id):
+        def _get_data():
+            with self.db.transaction() as tr:
+                attrs = tr.attr_query_station(id)
+            res = []
+            for k, var in attrs.varitems():
                 row = {
-                    "i": rec["context_id"],
-                    "r": rec["rep_memo"],
-                    "s": rec["ana_id"],
-                    "c": rec["var"],
-                    "l": tuple(rec["level"]),
-                    "t": tuple(rec["trange"]),
-                    "d": _export_datetime(rec["datetime"]),
+                    "c": k,
                     "v": var.enq(),
                     "vt": var.info.type,
                 }
-                if var.info.type in ("integer", "decimal"):
-                    row["vs"] = var.info.scale
+                res.append(row)
+            return res
+        records = await self.loop.run_in_executor(self.executor, _get_data)
+        return records
+
+    async def get_data_attrs(self, id):
+        def _get_data():
+            with self.db.transaction() as tr:
+                attrs = tr.attr_query_data(id)
+            res = []
+            for k, var in attrs.varitems():
+                row = {
+                    "c": k,
+                    "v": var.enq(),
+                    "vt": var.info.type,
+                }
                 res.append(row)
             return res
         records = await self.loop.run_in_executor(self.executor, _get_data)

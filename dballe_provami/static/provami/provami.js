@@ -79,6 +79,18 @@ class Server
         return await this._get("get_data", {});
     }
 
+    async get_station_data(id_station) {
+        return await this._get("get_station_data", {id_station: id_station});
+    }
+
+    async get_station_data_attrs(id) {
+        return await this._get("get_station_data_attrs", {id: id});
+    }
+
+    async get_data_attrs(id) {
+        return await this._get("get_data_attrs", {id: id});
+    }
+
     async set_filter(filter) {
         return await this._post("set_filter", {filter: filter});
     }
@@ -148,11 +160,22 @@ class Provami
     async show_station_data(id_station)
     {
         console.log("show_station_data", id_station);
+        var data = await this.server.get_station_data(id_station);
+        console.log("data:", data);
+    }
+
+    async show_station_data_attrs(id)
+    {
+        console.log("show_station_data_attrs", id);
+        var data = await this.server.get_station_data_attrs(id);
+        console.log("data:", data);
     }
 
     async show_data_attrs(id)
     {
         console.log("show_data_attrs", id);
+        var data = await this.server.get_data_attrs(id);
+        console.log("data:", data);
     }
 }
 

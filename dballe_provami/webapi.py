@@ -61,6 +61,21 @@ class WebAPI:
             "rows": await self.session.get_data(),
         }
 
+    async def do_get_station_data(self, id_station, **kw):
+        return {
+            "rows": await self.session.get_station_data(int(id_station)),
+        }
+
+    async def do_get_station_data_attrs(self, id, **kw):
+        return {
+            "rows": await self.session.get_station_data_attrs(int(id)),
+        }
+
+    async def do_get_data_attrs(self, id, **kw):
+        return {
+            "rows": await self.session.get_data_attrs(int(id)),
+        }
+
     async def do_set_filter(self, filter, **kw):
         return {
             "explorer": await self.session.set_filter(filter),

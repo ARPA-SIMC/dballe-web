@@ -27,6 +27,8 @@ class RestGET(tornado.web.RequestHandler):
 
     async def get(self, **kwargs):
         self.kwargs.update(kwargs)
+        for name, vals in self.request.query_arguments.items():
+            self.kwargs[name] = vals[-1]
         try:
             self.write(await self.application.webapi(self.function, **self.kwargs))
         except WebAPIError as e:
@@ -111,6 +113,9 @@ class Application(tornado.web.Application):
             url(r"/api/1.0/async_ping", RestGET, kwargs={"function": "async_ping"}, name="api1.0_async_ping"),
             url(r"/api/1.0/init", RestGET, kwargs={"function": "init"}, name="api1.0_init"),
             url(r"/api/1.0/get_data", RestGET, kwargs={"function": "get_data"}, name="api1.0_get_data"),
+            url(r"/api/1.0/get_station_data", RestGET, kwargs={"function": "get_station_data"}, name="api1.0_get_station_data"),
+            url(r"/api/1.0/get_station_data_attrs", RestGET, kwargs={"function": "get_station_data_attrs"}, name="api1.0_get_station_data_attrs"),
+            url(r"/api/1.0/get_data_attrs", RestGET, kwargs={"function": "get_data_attrs"}, name="api1.0_get_data_attrs"),
             url(r"/api/1.0/set_filter", RestPOST, kwargs={"function": "set_filter"}, name="api1.0_set_filter"),
             url(r"/api/1.0/replace_data", RestPOST, kwargs={"function": "replace_data"}, name="api1.0_replace_data"),
             url(r"/api/1.0/set_data_limit", RestPOST, kwargs={"function": "set_data_limit"}, name="api1.0_set_data_limit"),
