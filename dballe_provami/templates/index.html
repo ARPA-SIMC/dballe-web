@@ -70,7 +70,7 @@ input.data_editor {
 {% block body %}
 <div class="card">
   <div class="card-header">
-    <ul class="nav nav-tabs card-header-tabs d-flex" role="tablist">
+    <ul class="nav nav-tabs card-header-tabs" role="tablist">
       <li class="nav-item">
         <a data-toggle="tab" role="tab" aria-controls="tab-splash" class="nav-link" id="tab-header-splash" href="#tab-splash">Provami</a>
       </li>
@@ -94,10 +94,32 @@ input.data_editor {
           <div class="row">
             <div class="col-sm-4">
               <div class="card">
-                <div class="card-header d-flex">
-                  <div>Filter</div>
+                <div class="card-header">
+                  <ul class="nav nav-tabs card-header-tabs" role="tablist">
+                    <li class="nav-item">
+                      <a data-toggle="tab" role="tab" aria-controls="tab-splash" class="nav-link active" id="tab-header-filter-filter" href="#tab-filter-filter">Filter</a>
+                    </li>
+                    <li class="nav-item">
+                      <a data-toggle="tab" role="tab" aria-controls="tab-splash" class="nav-link" id="tab-header-filter-station" href="#tab-filter-station">Station</a>
+                    </li>
+                    <li class="nav-item">
+                      <a data-toggle="tab" role="tab" aria-controls="tab-splash" class="nav-link" id="tab-header-filter-attrs" href="#tab-filter-attrs">Attributes</a>
+                    </li>
+                  </ul>
                 </div>
-                {% include "provami-filter.html" %}
+                <div class="card-body">
+                  <div class="tab-content">
+                    <div role="tabpanel" aria-labelledby="tab-header-filter-filter" id="tab-filter-filter" class="tab-pane active">
+                      {% include "provami-filter.html" %}
+                    </div>
+                    <div role="tabpanel" aria-labelledby="tab-header-filter-station" id="tab-filter-station" class="tab-pane">
+                      TODO: station data
+                    </div>
+                    <div role="tabpanel" aria-labelledby="tab-header-filter-attrs" id="tab-filter-attrs" class="tab-pane">
+                      TODO: attrs
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
             <div class="col-lg">
