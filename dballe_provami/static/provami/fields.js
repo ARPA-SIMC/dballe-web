@@ -218,25 +218,48 @@ class FilterFieldDateTime extends FilterField
     on_change(evt)
     {
         this.value = {
-            datemin: this.complete_value(this.field_min.val()),
-            datemax: this.complete_value(this.field_max.val()),
+            datemin: this.complete_value_min(this.field_min.val()),
+            datemax: this.complete_value_max(this.field_max.val()),
         }
         this.filters.update_filter().then();
     }
 
-    complete_value(val)
+    parse_value(val)
     {
         let re = /([0-9]{4})(?:-([0-9]+)(?:-([0-9]+)(?: ([0-9]+)(?::([0-9]+)(?::([0-9]+))?)?)?)?)?/;
         let parsed = re.exec(val);
+        if (!parsed) return null;
+        return parsed;
+    }
+
+    format_parsed(val)
+    {
+        const pad = (num, digits) => { return num.toString().padStart(digits, "0"); };
+        return `${pad(val[0], 4)}-${pad(val[1], 2)}-${pad(val[2], 2)} ${pad(val[3], 2)}:${pad(val[4], 2)}:${pad(val[5], 2)}`;
+    }
+
+    complete_value_min(val)
+    {
+        let parsed = this.parse_value(val);
         if (!parsed) return null;
         let full = [0, 1, 1, 0, 0, 0];
         for (var i = 0; i < 6; ++i)
             if (parsed[i + 1] !== undefined)
                 full[i] = parsed[i + 1];
-        const pad = (num, digits) => { return num.toString().padStart(digits, "0"); };
-        const res = `${pad(full[0], 4)}-${pad(full[1], 2)}-${pad(full[2], 2)} ${pad(full[3], 2)}:${pad(full[4], 2)}:${pad(full[5], 2)}`;
-        console.log("RESULT", res);
-        return res;
+        return this.format_parsed(full);
+    }
+
+    complete_value_max(val)
+    {
+        let parsed = this.parse_value(val);
+        if (!parsed) return null;
+        let full = [0, 12, 31, 23, 59, 59];
+        for (var i = 0; i < 6; ++i)
+            if (parsed[i + 1] !== undefined)
+                full[i] = parsed[i + 1];
+            else if (i == 2)
+                full[i] = new Date(full[0], full[1], 0).getDate();
+        return this.format_parsed(full);
     }
 
     update_explorer(explorer)
