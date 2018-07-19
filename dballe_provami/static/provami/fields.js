@@ -265,8 +265,8 @@ class FilterFieldDateTime extends FilterField
     update_explorer(explorer)
     {
         this.value = {
-            datemin: explorer.stats.datetime_min,
-            datemax: explorer.stats.datetime_max,
+            datemin: explorer.filter.datemin,
+            datemax: explorer.filter.datemax,
         };
         this.field_min.attr("placeholder", explorer.stats.datetime_min);
         this.field_max.attr("placeholder", explorer.stats.datetime_max);
