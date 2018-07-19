@@ -135,8 +135,84 @@ class Data
     }
 }
 
+class StationData
+{
+    constructor(provami)
+    {
+        this.provami = provami;
+        this.tbody = $("#station-data tbody");
+        /*
+        this.tbody.on("click", "td", evt => {
+            let data = $(evt.target.parentNode).data("dballe_data");
+            let idx = evt.target.cellIndex;
+            let el = $(evt.target);
+            if (idx == 6 && !el.data("provami_editor"))
+            {
+                new Editor(this.provami, el, data);
+            } else {
+                this.provami.show_station_data(data.s).then();
+                this.provami.show_data_attrs(data.i).then();
+            }
+        });
+        */
+    }
+
+    update(data)
+    {
+        this.tbody.empty();
+
+        for (var i = 0; i < data.rows.length; ++i)
+        {
+            var row = data.rows[i];
+            var tr = $("<tr class='d-flex'>").data("dballe_data", row);
+            tr.append($("<td class='col-4'>").text(row.c));
+            tr.append($("<td class='col-8'>").text(row.v));
+            this.tbody.append(tr);
+        }
+    }
+}
+
+class Attrs
+{
+    constructor(provami)
+    {
+        this.provami = provami;
+        this.tbody = $("#attrs tbody");
+        /*
+        this.tbody.on("click", "td", evt => {
+            let data = $(evt.target.parentNode).data("dballe_data");
+            let idx = evt.target.cellIndex;
+            let el = $(evt.target);
+            if (idx == 6 && !el.data("provami_editor"))
+            {
+                new Editor(this.provami, el, data);
+            } else {
+                this.provami.show_station_data(data.s).then();
+                this.provami.show_data_attrs(data.i).then();
+            }
+        });
+        */
+    }
+
+    update(data)
+    {
+        this.tbody.empty();
+
+        for (var i = 0; i < data.rows.length; ++i)
+        {
+            var row = data.rows[i];
+            var tr = $("<tr class='d-flex'>").data("dballe_data", row);
+            tr.append($("<td class='col-4'>").text(row.c));
+            tr.append($("<td class='col-8'>").text(row.v));
+            this.tbody.append(tr);
+        }
+    }
+}
+
 window.provami = $.extend(window.provami || {}, {
     Data: Data,
+    StationData: StationData,
+    Attrs: Attrs,
 });
 
 })(jQuery);

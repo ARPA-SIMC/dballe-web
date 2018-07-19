@@ -113,6 +113,8 @@ class Provami
         this.map = new window.provami.Map("map", options);
         this.filters = new window.provami.Filters(this);
 	this.data = new window.provami.Data(this);
+	this.station_data = new window.provami.StationData(this);
+	this.attrs = new window.provami.Attrs(this);
     }
 
     async init()
@@ -161,21 +163,24 @@ class Provami
     {
         console.log("show_station_data", id_station);
         var data = await this.server.get_station_data(id_station);
-        console.log("data:", data);
+        console.log("show_station_data data:", data);
+	this.station_data.update(data);
     }
 
     async show_station_data_attrs(id)
     {
         console.log("show_station_data_attrs", id);
         var data = await this.server.get_station_data_attrs(id);
-        console.log("data:", data);
+        console.log("show_station_data_attrs data:", data);
+	this.attrs.update(data);
     }
 
     async show_data_attrs(id)
     {
         console.log("show_data_attrs", id);
         var data = await this.server.get_data_attrs(id);
-        console.log("data:", data);
+        console.log("show_data_attrs data:", data);
+	this.attrs.update(data);
     }
 }
 

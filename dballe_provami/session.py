@@ -179,6 +179,7 @@ class Session:
         """
         if format in ("bufr", "crex"):
             def exporter():
+                # TODO: serialize DB access in executors
                 with self.db.transaction() as tr:
                     tr.export_to_file(self.filter.to_record(), format.upper(), out)
             await self.loop.run_in_executor(self.executor, exporter)
@@ -212,6 +213,7 @@ class Session:
             if self.data_limit is not None:
                 query["limit"] = self.data_limit
             res = []
+            # TODO: serialize DB access in executors
             with self.db.transaction() as tr:
                 for rec in tr.query_data(query):
                     var = rec.var(rec["var"])
@@ -238,6 +240,7 @@ class Session:
             query = dballe.Record()
             query["ana_id"] = id_station
             res = []
+            # TODO: serialize DB access in executors
             with self.db.transaction() as tr:
                 for rec in tr.query_station_data(query):
                     var = rec.var(rec["var"])
@@ -254,6 +257,7 @@ class Session:
 
     async def get_station_data_attrs(self, id):
         def _get_data():
+            # TODO: serialize DB access in executors
             with self.db.transaction() as tr:
                 attrs = tr.attr_query_station(id)
             res = []
@@ -270,6 +274,7 @@ class Session:
 
     async def get_data_attrs(self, id):
         def _get_data():
+            # TODO: serialize DB access in executors
             with self.db.transaction() as tr:
                 attrs = tr.attr_query_data(id)
             res = []
