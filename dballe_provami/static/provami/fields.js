@@ -196,6 +196,83 @@ class FilterFieldChoices extends FilterField
 
 
 /**
+ * Date-time filter
+ */
+class FilterFieldDateTime extends FilterField
+{
+    constructor(filters)
+    {
+        super(filters, "datetime");
+        this.field_min = $("#filter-field-datetime-min");
+        this.field_max = $("#filter-field-datetime-max");
+        this.field_min.change(evt => { this.on_change(evt); });
+        this.field_max.change(evt => { this.on_change(evt); });
+    }
+
+    unset()
+    {
+        this.value = {};
+        this.filters.update_filter().then();
+    }
+
+    on_change(evt)
+    {
+        this.value = {
+            datemin: this.complete_value(this.field_min.val()),
+            datemax: this.complete_value(this.field_max.val()),
+        }
+        this.filters.update_filter().then();
+    }
+
+    complete_value(val)
+    {
+        let re = /([0-9]{4})(?:-([0-9]+)(?:-([0-9]+)(?: ([0-9]+)(?::([0-9]+)(?::([0-9]+))?)?)?)?)?/;
+        let parsed = re.exec(val);
+        if (!parsed) return null;
+        let full = [0, 1, 1, 0, 0, 0];
+        for (var i = 0; i < 6; ++i)
+            if (parsed[i + 1] !== undefined)
+                full[i] = parsed[i + 1];
+        const pad = (num, digits) => { return num.toString().padStart(digits, "0"); };
+        const res = `${pad(full[0], 4)}-${pad(full[1], 2)}-${pad(full[2], 2)} ${pad(full[3], 2)}:${pad(full[4], 2)}:${pad(full[5], 2)}`;
+        console.log("RESULT", res);
+        return res;
+    }
+
+    update_explorer(explorer)
+    {
+        this.value = {
+            datemin: explorer.stats.datetime_min,
+            datemax: explorer.stats.datetime_max,
+        };
+        this.field_min.attr("placeholder", explorer.stats.datetime_min);
+        this.field_max.attr("placeholder", explorer.stats.datetime_max);
+
+        let has_value = false;
+
+        if (explorer.filter.datemin)
+        {
+            has_value = true;
+            this.field_min.val(explorer.filter.datemin);
+        } else
+            this.field_min.val(null);
+
+        if (explorer.filter.datemax)
+        {
+            has_value = true;
+            this.field_max.val(explorer.filter.datemax);
+        } else
+            this.field_max.val(null);
+
+        if (has_value)
+            this.remove.show();
+        else
+            this.remove.hide();
+    }
+}
+
+
+/**
  * Manager for all filter fields
  */
 class Filters
@@ -209,6 +286,7 @@ class Filters
             new FilterFieldChoices(this, "var"), // TODO: rename in varcode
             new FilterFieldChoices(this, "level"),
             new FilterFieldChoices(this, "trange"),
+            new FilterFieldDateTime(this),
         ];
 
         $("#filter_fields").attr("disabled", true);

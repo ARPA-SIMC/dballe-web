@@ -8,6 +8,16 @@ import logging
 log = logging.getLogger(__name__)
 
 
+def _export_datetime(dt):
+    return dt.strftime("%Y-%m-%d %H:%M:%S") if dt is not None else None
+
+
+def _import_datetime(val):
+    if not val:
+        return None
+    return datetime.datetime.strptime(val, "%Y-%m-%d %H:%M:%S")
+
+
 class Filter:
     def __init__(self):
         self.ana_id = None
@@ -58,8 +68,8 @@ class Filter:
             "level": None if self.level is None else [self.level, dballe.describe_level(*self.level)],
             "trange": None if self.trange is None else [self.trange, dballe.describe_trange(*self.trange)],
             "var": self.var,
-            "datemin": self.datemin.strftime("%Y-%m-%d %H:%M:%S") if self.datemin is not None else None,
-            "datemax": self.datemax.strftime("%Y-%m-%d %H:%M:%S") if self.datemin is not None else None,
+            "datemin": _export_datetime(self.datemin),
+            "datemax": _export_datetime(self.datemax),
             "latmin": self.latmin,
             "latmax": self.latmax,
             "lonmin": self.lonmin,
@@ -74,8 +84,8 @@ class Filter:
         res.level = data.get("level")
         res.trange = data.get("trange")
         res.var = data.get("var")
-        res.datemin = data.get("datemin")
-        res.datemax = data.get("datemax")
+        res.datemin = _import_datetime(data.get("datemin"))
+        res.datemax = _import_datetime(data.get("datemax"))
         res.latmin = data.get("latmin")
         res.latmax = data.get("latmax")
         res.lonmin = data.get("lonmin")
@@ -137,6 +147,8 @@ class Session:
             else:
                 stations_disabled.append(station)
 
+        stats = self.explorer.stats
+
         return {
             "filter": self.filter.to_dict(),
             "stations": stations,
@@ -145,8 +157,11 @@ class Session:
             "level": [(tuple(x), dballe.describe_level(*x)) for x in self.explorer.levels],
             "trange": [(tuple(x), dballe.describe_trange(*x)) for x in self.explorer.tranges],
             "var": self.explorer.varcodes,
-            # "datemin": self.datemin.strftime("%Y-%m-%d %H:%M:%S") if self.datemin is not None else None,
-            # "datemax": self.datemax.strftime("%Y-%m-%d %H:%M:%S") if self.datemin is not None else None,
+            "stats": {
+                "datetime_min": _export_datetime(stats.datetime_min),
+                "datetime_max": _export_datetime(stats.datetime_max),
+                "count": stats.count,
+            },
             "initialized": self.initialized,
             "data_limit": self.data_limit,
         }
@@ -203,7 +218,7 @@ class Session:
                     "c": rec["var"],
                     "l": tuple(rec["level"]),
                     "t": tuple(rec["trange"]),
-                    "d": rec["datetime"].strftime("%Y-%m-%d %H:%M:%S"),
+                    "d": _export_datetime(rec["datetime"]),
                     "v": var.enq(),
                     "vt": var.info.type,
                 }
@@ -220,7 +235,7 @@ class Session:
         r["ana_id"] = int(rec["ana_id"])
         r["level"] = tuple(rec["level"])
         r["trange"] = tuple(rec["trange"])
-        r["datetime"] = datetime.datetime.strptime(rec["datetime"], "%Y-%m-%d %H:%M:%S")
+        r["datetime"] = _import_datetime(rec["datetime"])
         if rec["vt"] == "decimal":
             r[rec["varcode"]] = float(rec["value"])
         elif rec["vt"] == "integer":
