@@ -62,6 +62,7 @@ class FilterFieldStation extends FilterField
         ];
         this._set_value(filters);
         this.filters.update_filter().then();
+        this.filters.dballeweb.show_station_data(info.id).then();
     }
 
     select_station_bounds(bounds, finished)
