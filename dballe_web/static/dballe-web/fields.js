@@ -9,7 +9,7 @@ class FilterField
         this.filters = filters
         this.name = name;
         this.container = $("#filter-" + this.name);
-        this.remove = this.container.find(".provami-remove").hide();
+        this.remove = this.container.find(".dballeweb-remove").hide();
         this.value = null;
         this.remove.click(evt => { this.unset(); });
     }
@@ -23,9 +23,9 @@ class FilterFieldStation extends FilterField
     constructor(filters)
     {
         super(filters, "station");
-        this.map = filters.provami.map;
+        this.map = filters.dballeweb.map;
         this.map.controllers.push(this);
-        this.field_value = this.container.find(".provami-value");
+        this.field_value = this.container.find(".dballeweb-value");
     }
 
     unset()
@@ -142,7 +142,7 @@ class FilterFieldChoices extends FilterField
         value = this._get_option(value);
         this.value = {};
         this.remove.hide();
-        this.container.find(".provami-value").text(value[1]).show();
+        this.container.find(".dballeweb-value").text(value[1]).show();
         this.field.hide();
     }
 
@@ -162,7 +162,7 @@ class FilterFieldChoices extends FilterField
         }
 
         this.remove.hide();
-        this.container.find(".provami-value").hide();
+        this.container.find(".dballeweb-value").hide();
         this.field.show();
     }
 
@@ -173,7 +173,7 @@ class FilterFieldChoices extends FilterField
         this.value = {};
         this.value[this.name] = value[0];
         this.remove.show();
-        this.container.find(".provami-value").text(value[1]).show();
+        this.container.find(".dballeweb-value").text(value[1]).show();
         this.field.hide();
     }
 
@@ -300,9 +300,9 @@ class FilterFieldDateTime extends FilterField
  */
 class Filters
 {
-    constructor(provami)
+    constructor(dballeweb)
     {
-        this.provami = provami
+        this.dballeweb = dballeweb
         this.fields = [
             new FilterFieldStation(this),
             new FilterFieldChoices(this, "rep_memo"),
@@ -344,12 +344,12 @@ class Filters
         for (let field of this.fields)
             Object.assign(filter, field.value);
         console.log("Filters: set new filter", filter);
-        await this.provami.set_filter(filter);
+        await this.dballeweb.set_filter(filter);
     }
 }
 
 
-window.provami = $.extend(window.provami || {}, {
+window.dballeweb = $.extend(window.dballeweb || {}, {
     Filters: Filters,
 });
 

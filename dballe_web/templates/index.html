@@ -44,8 +44,8 @@ input.data_editor {
 (function($) {
   function main()
   {
-    provami = new window.provami.Provami({
-      resource_url: "{{ static_url('provami/') }}",
+    dballeweb = new window.dballeweb.DballeWeb({
+      resource_url: "{{ static_url('dballe-web/') }}",
     });
 
     $("#jumbotron-goto-filter").click(evt => {
@@ -56,7 +56,7 @@ input.data_editor {
 
   async function async_main()
   {
-    await provami.init();
+    await dballeweb.init();
   }
 
   $(document).ready(() => {
@@ -72,7 +72,7 @@ input.data_editor {
   <div class="card-header">
     <ul class="nav nav-tabs card-header-tabs" role="tablist">
       <li class="nav-item">
-        <a data-toggle="tab" role="tab" aria-controls="tab-splash" class="nav-link" id="tab-header-splash" href="#tab-splash">Provami</a>
+        <a data-toggle="tab" role="tab" aria-controls="tab-splash" class="nav-link" id="tab-header-splash" href="#tab-splash">DB-All.e Web</a>
       </li>
       <li class="nav-item">
         <a data-toggle="tab" role="tab" aria-controls="tab-filter" class="nav-link active" id="tab-header-filter" href="#tab-filter">Explore</a>
@@ -86,7 +86,7 @@ input.data_editor {
     <div class="tab-content">
       <div role="tabpanel" aria-labelledby="tab-header-splash" id="tab-splash" class="tab-pane">
         <div class="container">
-          {% include "provami-splash.html" %}
+          {% include "dballeweb-splash.html" %}
         </div>
       </div>
       <div role="tabpanel" aria-labelledby="tab-header-filter" id="tab-filter" class="tab-pane active">
@@ -110,13 +110,13 @@ input.data_editor {
                 <div class="card-body">
                   <div class="tab-content">
                     <div role="tabpanel" aria-labelledby="tab-header-filter-filter" id="tab-filter-filter" class="tab-pane active">
-                      {% include "provami-filter.html" %}
+                      {% include "dballeweb-filter.html" %}
                     </div>
                     <div role="tabpanel" aria-labelledby="tab-header-filter-station" id="tab-filter-station" class="tab-pane">
-                      {% include "provami-station-data.html" %}
+                      {% include "dballeweb-station-data.html" %}
                     </div>
                     <div role="tabpanel" aria-labelledby="tab-header-filter-attrs" id="tab-filter-attrs" class="tab-pane">
-                      {% include "provami-attrs.html" %}
+                      {% include "dballeweb-attrs.html" %}
                     </div>
                   </div>
                 </div>
@@ -132,12 +132,12 @@ input.data_editor {
           </div> <!-- /div class="row" -->
 
           <div class="card">
-            {% include "provami-data.html" %}
+            {% include "dballeweb-data.html" %}
           </div>
         </div> <!-- /div class="container-fluid" -->
       </div>
       <div role="tabpanel" aria-labelledby="tab-header-export" id="tab-export" class="tab-pane">
-        {% include "provami-export.html" %}
+        {% include "dballeweb-export.html" %}
       </div>
     </div>
   </div>

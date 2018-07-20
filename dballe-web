@@ -3,7 +3,7 @@ import os
 import os.path
 import sys
 import webbrowser
-from dballe_provami.webserver import Application
+from dballe_web.webserver import Application
 from tornado.options import define, options
 from tornado.platform.asyncio import AsyncIOMainLoop
 import asyncio
@@ -36,12 +36,12 @@ def main():
         options.print_help()
         return 1
 
-    provami = Provami()
-    provami.setup()
+    app = Provami()
+    app.setup()
     webbrowser.open("http://{}:{}/".format(options.web_host, options.web_port))
 
     def _on_init():
-        asyncio.get_event_loop().create_task(provami.async_setup())
+        asyncio.get_event_loop().create_task(app.async_setup())
     asyncio.get_event_loop().call_soon(_on_init)
     asyncio.get_event_loop().run_forever()
 

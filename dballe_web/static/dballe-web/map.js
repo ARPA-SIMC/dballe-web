@@ -207,7 +207,7 @@ class Map
 }
 
 
-window.provami = $.extend(window.provami || {}, {
+window.dballeweb = $.extend(window.dballeweb || {}, {
     Map: Map,
 });
 

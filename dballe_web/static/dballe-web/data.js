@@ -4,9 +4,9 @@
 
 class Editor
 {
-    constructor(provami, td, dballe_data)
+    constructor(dballeweb, td, dballe_data)
     {
-        this.provami = provami;
+        this.dballeweb = dballeweb;
         this.td = td;
         this.dballe_data = dballe_data;
         if (dballe_data.vt == "decimal")
@@ -25,14 +25,14 @@ class Editor
         this.editor.keyup(evt => { this.on_keyup(evt) });
         this.editor.blur(evt => { this.on_blur(evt) });
         this.td.empty().append(this.editor);
-        this.td.data("provami_editor", this.editor);
+        this.td.data("dballeweb_editor", this.editor);
         this.editor.focus();
     }
 
     // Cancel the editing and restore the TD as it was
     rollback()
     {
-        this.td.empty().text(this.dballe_data.v).removeData("provami_editor");
+        this.td.empty().text(this.dballe_data.v).removeData("dballeweb_editor");
     }
 
     // Save the new value
@@ -55,8 +55,8 @@ class Editor
         else
             rec.value = value;
 
-        this.td.empty().text(value).removeData("provami_editor");
-        this.provami.replace_data(rec).then();
+        this.td.empty().text(value).removeData("dballeweb_editor");
+        this.dballeweb.replace_data(rec).then();
     }
 
     on_keyup(evt)
@@ -86,27 +86,27 @@ class Editor
 
 class Data
 {
-    constructor(provami)
+    constructor(dballeweb)
     {
-        this.provami = provami;
+        this.dballeweb = dballeweb;
         this.tbody = $("#data tbody");
         this.tbody.on("click", "td", evt => {
             let data = $(evt.target.parentNode).data("dballe_data");
             let idx = evt.target.cellIndex;
             let el = $(evt.target);
-            if (idx == 6 && !el.data("provami_editor"))
+            if (idx == 6 && !el.data("dballeweb_editor"))
             {
-                new Editor(this.provami, el, data);
+                new Editor(this.dballeweb, el, data);
             } else {
-                this.provami.show_station_data(data.s).then();
-                this.provami.show_data_attrs(data.i).then();
+                this.dballeweb.show_station_data(data.s).then();
+                this.dballeweb.show_data_attrs(data.i).then();
             }
         });
         this.data_limit = $("#data-limit");
         this.data_limit.change(evt => {
             let limit = this.data_limit.val();
             limit = limit == "unlimited" ? null : parseInt(limit);
-            this.provami.set_data_limit(limit).then();
+            this.dballeweb.set_data_limit(limit).then();
         });
     }
 
@@ -137,19 +137,19 @@ class Data
 
 class StationData
 {
-    constructor(provami)
+    constructor(dballeweb)
     {
-        this.provami = provami;
+        this.dballeweb = dballeweb;
         this.tbody = $("#station-data tbody");
         this.tbody.on("click", "td", evt => {
             let data = $(evt.target.parentNode).data("dballe_data");
             let idx = evt.target.cellIndex;
             let el = $(evt.target);
-            if (idx == 1 && !el.data("provami_editor"))
+            if (idx == 1 && !el.data("dballeweb_editor"))
             {
-                // TODO: new Editor(this.provami, el, data);
+                // TODO: new Editor(this.dballeweb, el, data);
             } else {
-                this.provami.show_station_data_attrs(data.i).then();
+                this.dballeweb.show_station_data_attrs(data.i).then();
             }
         });
     }
@@ -171,21 +171,21 @@ class StationData
 
 class Attrs
 {
-    constructor(provami)
+    constructor(dballeweb)
     {
-        this.provami = provami;
+        this.dballeweb = dballeweb;
         this.tbody = $("#attrs tbody");
         /*
         this.tbody.on("click", "td", evt => {
             let data = $(evt.target.parentNode).data("dballe_data");
             let idx = evt.target.cellIndex;
             let el = $(evt.target);
-            if (idx == 6 && !el.data("provami_editor"))
+            if (idx == 6 && !el.data("dballeweb_editor"))
             {
-                new Editor(this.provami, el, data);
+                new Editor(this.dballeweb, el, data);
             } else {
-                this.provami.show_station_data(data.s).then();
-                this.provami.show_data_attrs(data.i).then();
+                this.dballeweb.show_station_data(data.s).then();
+                this.dballeweb.show_data_attrs(data.i).then();
             }
         });
         */
@@ -206,7 +206,7 @@ class Attrs
     }
 }
 
-window.provami = $.extend(window.provami || {}, {
+window.dballeweb = $.extend(window.dballeweb || {}, {
     Data: Data,
     StationData: StationData,
     Attrs: Attrs,

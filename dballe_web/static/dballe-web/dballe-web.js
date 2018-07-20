@@ -104,17 +104,17 @@ class Server
     }
 }
 
-class Provami
+class DballeWeb
 {
     constructor(options)
     {
         this.options = options;
-        this.server = new window.provami.Server();
-        this.map = new window.provami.Map("map", options);
-        this.filters = new window.provami.Filters(this);
-	this.data = new window.provami.Data(this);
-	this.station_data = new window.provami.StationData(this);
-	this.attrs = new window.provami.Attrs(this);
+        this.server = new window.dballeweb.Server();
+        this.map = new window.dballeweb.Map("map", options);
+        this.filters = new window.dballeweb.Filters(this);
+	this.data = new window.dballeweb.Data(this);
+	this.station_data = new window.dballeweb.StationData(this);
+	this.attrs = new window.dballeweb.Attrs(this);
     }
 
     async init()
@@ -135,8 +135,8 @@ class Provami
     {
         this.filters.update_explorer(explorer);
         this.data.update_explorer(explorer);
-        $(".provami-view-url").text(explorer.db_url);
-        $(".provami-view-filter-cmdline").text(explorer.filter_cmdline);
+        $(".dballeweb-view-url").text(explorer.db_url);
+        $(".dballeweb-view-filter-cmdline").text(explorer.filter_cmdline);
     }
 
     async update_data()
@@ -184,9 +184,9 @@ class Provami
     }
 }
 
-window.provami = $.extend(window.provami || {}, {
+window.dballeweb = $.extend(window.dballeweb || {}, {
     Server: Server,
-    Provami: Provami,
+    DballeWeb: DballeWeb,
 });
 
 })(jQuery);
