@@ -95,6 +95,10 @@ class Server
         return await this._post("set_filter", {filter: filter});
     }
 
+    async replace_station_data(rec) {
+        return await this._post("replace_station_data", {rec: rec});
+    }
+
     async replace_data(rec) {
         return await this._post("replace_data", {rec: rec});
     }
@@ -143,6 +147,13 @@ class DballeWeb
     {
         var data = await this.server.get_data();
 	this.data.update(data);
+    }
+
+    async replace_station_data(rec)
+    {
+	console.log("replace_station_data", rec);
+	var data = await this.server.replace_station_data(rec);
+	this.station_data.update(data);
     }
 
     async replace_data(rec)

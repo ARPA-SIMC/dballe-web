@@ -35,30 +35,6 @@ class Editor
         this.td.empty().text(this.dballe_data.v).removeData("dballeweb_editor");
     }
 
-    // Save the new value
-    commit()
-    {
-        var value = this.editor.val();
-
-        const rec = {
-            ana_id: this.dballe_data.s,
-            varcode: this.dballe_data.c,
-            level: this.dballe_data.l,
-            trange: this.dballe_data.t,
-            datetime: this.dballe_data.d,
-            vt: this.dballe_data.vt,
-        };
-        if (this.dballe_data.vt == "decimal")
-            rec.value = parseFloat(value)
-        else if (this.dballe_data.vt == "decimal")
-            rec.value = parseInt(value)
-        else
-            rec.value = value;
-
-        this.td.empty().text(value).removeData("dballeweb_editor");
-        this.dballeweb.replace_data(rec).then();
-    }
-
     on_keyup(evt)
     {
         if (evt.keyCode == 27) // ESC
@@ -84,6 +60,63 @@ class Editor
     }
 }
 
+class StationDataEditor extends Editor
+{
+    constructor(dballeweb, td, dballe_station, dballe_data)
+    {
+        super(dballeweb, td, dballe_data);
+        this.dballe_station = dballe_station;
+    }
+
+    // Save the new value
+    commit()
+    {
+        var value = this.editor.val();
+
+        const rec = {
+            ana_id: this.dballe_station.id,
+            varcode: this.dballe_data.c,
+            vt: this.dballe_data.vt,
+        };
+        if (this.dballe_data.vt == "decimal")
+            rec.value = parseFloat(value)
+        else if (this.dballe_data.vt == "decimal")
+            rec.value = parseInt(value)
+        else
+            rec.value = value;
+
+        this.td.empty().text(value).removeData("dballeweb_editor");
+        this.dballeweb.replace_station_data(rec).then();
+    }
+}
+
+class DataEditor extends Editor
+{
+    // Save the new value
+    commit()
+    {
+        var value = this.editor.val();
+
+        const rec = {
+            ana_id: this.dballe_data.s,
+            varcode: this.dballe_data.c,
+            level: this.dballe_data.l,
+            trange: this.dballe_data.t,
+            datetime: this.dballe_data.d,
+            vt: this.dballe_data.vt,
+        };
+        if (this.dballe_data.vt == "decimal")
+            rec.value = parseFloat(value)
+        else if (this.dballe_data.vt == "decimal")
+            rec.value = parseInt(value)
+        else
+            rec.value = value;
+
+        this.td.empty().text(value).removeData("dballeweb_editor");
+        this.dballeweb.replace_data(rec).then();
+    }
+}
+
 class Data
 {
     constructor(dballeweb)
@@ -96,7 +129,7 @@ class Data
             let el = $(evt.target);
             if (idx == 6 && !el.data("dballeweb_editor"))
             {
-                new Editor(this.dballeweb, el, data);
+                new DataEditor(this.dballeweb, el, data);
             } else {
                 this.dballeweb.show_station_data(data.s).then();
                 this.dballeweb.show_data_attrs(data.i).then();
@@ -142,12 +175,13 @@ class StationData
         this.dballeweb = dballeweb;
         this.tbody = $("#station-data tbody");
         this.tbody.on("click", "td", evt => {
-            let data = $(evt.target.parentNode).data("dballe_data");
-            let idx = evt.target.cellIndex;
+            const station = $(evt.target.parentNode).data("dballe_station");
+            const data = $(evt.target.parentNode).data("dballe_data");
+            const idx = evt.target.cellIndex;
             let el = $(evt.target);
             if (idx == 1 && !el.data("dballeweb_editor"))
             {
-                // TODO: new Editor(this.dballeweb, el, data);
+                new StationDataEditor(this.dballeweb, el, station, data);
             } else {
                 this.dballeweb.show_station_data_attrs(data.i).then();
             }
@@ -167,7 +201,7 @@ class StationData
 
         for (const row of rows)
         {
-            let tr = $("<tr class='d-flex'>").data("dballe_data", row);
+            let tr = $("<tr class='d-flex'>").data("dballe_data", row).data("dballe_station", station);
             tr.append($("<td class='col-4'>").text(row.c));
             tr.append($("<td class='col-8'>").text(row.v));
             this.tbody.append(tr);

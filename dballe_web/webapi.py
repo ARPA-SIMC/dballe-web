@@ -83,6 +83,13 @@ class WebAPI:
             "explorer": await self.session.set_filter(filter),
         }
 
+    async def do_replace_station_data(self, rec, **kw):
+        station, rows = await self.session.replace_station_data(rec)
+        return {
+            "station": station,
+            "rows": rows,
+        }
+
     async def do_replace_data(self, rec, **kw):
         return {
             "rows": await self.session.replace_data(rec),

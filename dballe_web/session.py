@@ -294,8 +294,21 @@ class Session:
         records = await self.loop.run_in_executor(self.executor, _get_data)
         return records
 
+    async def replace_station_data(self, rec):
+        log.debug("Session.replace_station_data %r", rec)
+        r = dballe.Record()
+        r["ana_id"] = int(rec["ana_id"])
+        if rec["vt"] == "decimal":
+            r[rec["varcode"]] = float(rec["value"])
+        elif rec["vt"] == "integer":
+            r[rec["varcode"]] = int(rec["value"])
+        else:
+            r[rec["varcode"]] = rec["value"]
+        self.db.insert_station_data(r, can_replace=True, can_add_stations=False)
+        return await self.get_station_data(rec["ana_id"])
+
     async def replace_data(self, rec):
-        log.debug("Session.update_value %r", rec)
+        log.debug("Session.replace_data %r", rec)
         r = dballe.Record()
         r["ana_id"] = int(rec["ana_id"])
         r["level"] = tuple(rec["level"])

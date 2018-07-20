@@ -117,6 +117,7 @@ class Application(tornado.web.Application):
             url(r"/api/1.0/get_station_data_attrs", RestGET, kwargs={"function": "get_station_data_attrs"}, name="api1.0_get_station_data_attrs"),
             url(r"/api/1.0/get_data_attrs", RestGET, kwargs={"function": "get_data_attrs"}, name="api1.0_get_data_attrs"),
             url(r"/api/1.0/set_filter", RestPOST, kwargs={"function": "set_filter"}, name="api1.0_set_filter"),
+            url(r"/api/1.0/replace_station_data", RestPOST, kwargs={"function": "replace_station_data"}, name="api1.0_replace_station_data"),
             url(r"/api/1.0/replace_data", RestPOST, kwargs={"function": "replace_data"}, name="api1.0_replace_data"),
             url(r"/api/1.0/set_data_limit", RestPOST, kwargs={"function": "set_data_limit"}, name="api1.0_set_data_limit"),
             url(r"/api/1.0/export/(?P<format>\w+)", Export, name="export"),
