@@ -156,12 +156,18 @@ class StationData
 
     update(data)
     {
+        const station = data.station;
+        const rows = data.rows;
         this.tbody.empty();
 
-        for (var i = 0; i < data.rows.length; ++i)
+        $("#dballeweb-station-data-id").text(station.id);
+        $("#dballeweb-station-data-repmemo").text(station.rep_memo);
+        $("#dballeweb-station-data-coords").text(`${station.lat}, ${station.lon}`);
+        $("#dballeweb-station-data-ident").text(station.ident ? station.ident : "-");
+
+        for (const row of rows)
         {
-            var row = data.rows[i];
-            var tr = $("<tr class='d-flex'>").data("dballe_data", row);
+            let tr = $("<tr class='d-flex'>").data("dballe_data", row);
             tr.append($("<td class='col-4'>").text(row.c));
             tr.append($("<td class='col-8'>").text(row.v));
             this.tbody.append(tr);

@@ -62,8 +62,10 @@ class WebAPI:
         }
 
     async def do_get_station_data(self, id_station, **kw):
+        station, rows = await self.session.get_station_data(int(id_station))
         return {
-            "rows": await self.session.get_station_data(int(id_station)),
+            "station": station,
+            "rows": rows,
         }
 
     async def do_get_station_data_attrs(self, id, **kw):
