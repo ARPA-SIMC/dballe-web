@@ -119,7 +119,7 @@ class Revalidator:
 class Session:
     def __init__(self, db_url):
         self.loop = asyncio.get_event_loop()
-        self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=2)
+        self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=1)
         self.db_url = db_url
         self.db = dballe.DB.connect_from_url(self.db_url)
         self.filter = Filter()
