@@ -40,7 +40,9 @@ def main():
 
     app = DballeWeb()
     app.setup()
-    webbrowser.open("http://{}:{}/".format(options.web_host, options.web_port))
+    url = "http://{}:{}/".format(options.web_host, options.web_port)
+    print("dballe-web URL:", url)
+    webbrowser.open(url)
 
     def _on_init():
         asyncio.get_event_loop().create_task(app.async_setup())
