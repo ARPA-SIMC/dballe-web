@@ -6,6 +6,7 @@ class Editor
 {
     constructor(dballeweb, td, dballe_data)
     {
+        console.debug("Editor.constructor", dballeweb, td, dballe_data);
         this.dballeweb = dballeweb;
         this.td = td;
         this.dballe_data = dballe_data;
@@ -87,6 +88,39 @@ class StationDataEditor extends Editor
 
         this.td.empty().text(value).removeData("dballeweb_editor");
         this.dballeweb.replace_station_data(rec).then();
+    }
+}
+
+class AttrsEditor extends Editor
+{
+    constructor(dballeweb, td, var_data, dballe_data)
+    {
+        super(dballeweb, td, dballe_data);
+        this.var_data = var_data;
+    }
+
+    // Save the new value
+    commit()
+    {
+        var value = this.editor.val();
+
+        const rec = {
+            c: this.dballe_data.c,
+            vt: this.dballe_data.vt,
+            vs: this.dballe_data.vs,
+        };
+        if (this.dballe_data.vt == "decimal")
+            rec.v = parseFloat(value)
+        else if (this.dballe_data.vt == "decimal")
+            rec.v = parseInt(value)
+        else
+            rec.v = value;
+
+        this.td.empty().text(value).removeData("dballeweb_editor");
+        if (this.var_data.d)
+            this.dballeweb.replace_data_attr(this.var_data, rec).then();
+        else
+            this.dballeweb.replace_station_data_attr(this.var_data, rec).then();
     }
 }
 
@@ -216,11 +250,12 @@ class Attrs
         this.dballeweb = dballeweb;
         this.tbody = $("#attrs tbody");
         this.tbody.on("click", "td", evt => {
+            let var_data = $(evt.target.parentNode).data("dballe_var_data");
             let data = $(evt.target.parentNode).data("dballe_data");
             let idx = evt.target.cellIndex;
             let el = $(evt.target);
             if (idx == 1 && !el.data("dballeweb_editor"))
-                new AttrsEditor(this.dballeweb, el, data);
+                new AttrsEditor(this.dballeweb, el, var_data, data);
         });
     }
 
@@ -234,7 +269,7 @@ class Attrs
         for (var i = 0; i < data.rows.length; ++i)
         {
             var row = data.rows[i];
-            var tr = $("<tr class='d-flex'>").data("dballe_data", row);
+            var tr = $("<tr class='d-flex'>").data("dballe_data", row).data("dballe_var_data", var_data);
             tr.append($("<td class='col-4'>").text(row.c));
             tr.append($("<td class='col-8'>").text(row.v));
             this.tbody.append(tr);

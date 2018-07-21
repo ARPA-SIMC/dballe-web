@@ -95,6 +95,16 @@ class WebAPI:
             "rows": await self.session.replace_data(rec),
         }
 
+    async def do_replace_station_data_attr(self, var_data, rec, **kw):
+        return {
+            "rows": await self.session.replace_station_data_attr(var_data, rec),
+        }
+
+    async def do_replace_data_attr(self, var_data, rec, **kw):
+        return {
+            "rows": await self.session.replace_data_attr(var_data, rec),
+        }
+
     async def do_set_data_limit(self, limit, **kw):
         return {
             "rows": await self.session.set_data_limit(limit),

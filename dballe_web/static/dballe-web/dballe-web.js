@@ -8,19 +8,6 @@ class Server
         var self = this;
     }
 
-    /*
-    _on_message(msg) {
-        var self = this;
-        var parsed = $.parseJSON(msg.data);
-        // console.log("Message:", parsed);
-        if (parsed.channel == "events")
-        {
-          if (parsed.type == "new_filter")
-            self.events.new_filter.trigger(parsed);
-        }
-    }
-    */
-
     _get(name, args) {
         var self = this;
         return new Promise((resolve, reject) => {
@@ -106,6 +93,14 @@ class Server
     async set_data_limit(limit) {
         return await this._post("set_data_limit", {limit: limit});
     }
+
+    async replace_station_data_attr(var_data, rec) {
+        return await this._post("replace_station_data_attr", {var_data: var_data, rec: rec});
+    }
+
+    async replace_data_attr(var_data, rec) {
+        return await this._post("replace_data_attr", {var_data: var_data, rec: rec});
+    }
 }
 
 class DballeWeb
@@ -116,9 +111,9 @@ class DballeWeb
         this.server = new window.dballeweb.Server();
         this.map = new window.dballeweb.Map("map", options);
         this.filters = new window.dballeweb.Filters(this);
-	this.data = new window.dballeweb.Data(this);
-	this.station_data = new window.dballeweb.StationData(this);
-	this.attrs = new window.dballeweb.Attrs(this);
+        this.data = new window.dballeweb.Data(this);
+        this.station_data = new window.dballeweb.StationData(this);
+        this.attrs = new window.dballeweb.Attrs(this);
     }
 
     async init()
@@ -146,52 +141,66 @@ class DballeWeb
     async update_data()
     {
         var data = await this.server.get_data();
-	this.data.update(data);
+        this.data.update(data);
     }
 
     async replace_station_data(rec)
     {
-	console.log("replace_station_data", rec);
-	var data = await this.server.replace_station_data(rec);
-	this.station_data.update(data);
+        console.debug("replace_station_data", rec);
+        var data = await this.server.replace_station_data(rec);
+        this.station_data.update(data);
     }
 
     async replace_data(rec)
     {
-	console.log("replace_data", rec);
-	var data = await this.server.replace_data(rec);
-	this.data.update(data);
+        console.debug("replace_data", rec);
+        var data = await this.server.replace_data(rec);
+        this.data.update(data);
     }
 
     async set_data_limit(limit)
     {
-	console.log("set_data_limit", limit);
-	var data = await this.server.set_data_limit(limit);
-	this.data.update(data);
+        console.debug("set_data_limit", limit);
+        var data = await this.server.set_data_limit(limit);
+        this.data.update(data);
     }
 
     async show_station_data(id_station)
     {
-        console.log("show_station_data", id_station);
+        console.debug("show_station_data", id_station);
         var data = await this.server.get_station_data(id_station);
-        console.log("show_station_data data:", data);
-	this.station_data.update(data);
+        console.debug("show_station_data data:", data);
+        this.station_data.update(data);
     }
 
     async show_station_data_attrs(var_data, id)
     {
-        console.log("show_station_data_attrs", var_data, id);
+        console.debug("show_station_data_attrs", var_data, id);
         var data = await this.server.get_station_data_attrs(id);
-        console.log("show_station_data_attrs data:", data);
-	this.attrs.update(var_data, data);
+        console.debug("show_station_data_attrs data:", data);
+        this.attrs.update(var_data, data);
     }
 
     async show_data_attrs(var_data, id)
     {
-        console.log("show_data_attrs", var_data, id);
+        console.debug("show_data_attrs", var_data, id);
         var data = await this.server.get_data_attrs(id);
-        console.log("show_data_attrs data:", data);
-	this.attrs.update(var_data, data);
+        console.debug("show_data_attrs data:", data);
+        this.attrs.update(var_data, data);
+    }
+
+    async replace_station_data_attr(var_data, rec)
+    {
+        console.debug("replace_station_data_attr", var_data, rec);
+        var data = await this.server.replace_station_data_attr(var_data, rec);
+        this.attrs.update(var_data, data);
+    }
+
+    async replace_data_attr(var_data, rec)
+    {
+        console.debug("replace_data_attr", var_data, rec);
+        var data = await this.server.replace_data_attr(var_data, rec);
+        this.attrs.update(var_data, data);
     }
 }
 

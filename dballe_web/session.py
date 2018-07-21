@@ -257,6 +257,8 @@ class Session:
                         "v": var.enq(),
                         "vt": var.info.type,
                     }
+                    if var.info.type in ("integer", "decimal"):
+                        row["vs"] = var.info.scale
                     res.append(row)
                 return station, res
         station, records = await self.loop.run_in_executor(self.executor, _get_data)
@@ -273,6 +275,8 @@ class Session:
                     "v": var.enq(),
                     "vt": var.info.type,
                 }
+                if var.info.type in ("integer", "decimal"):
+                    row["vs"] = var.info.scale
                 res.append(row)
             return res
         records = await self.loop.run_in_executor(self.executor, _get_data)
@@ -289,6 +293,8 @@ class Session:
                     "v": var.enq(),
                     "vt": var.info.type,
                 }
+                if var.info.type in ("integer", "decimal"):
+                    row["vs"] = var.info.scale
                 res.append(row)
             return res
         records = await self.loop.run_in_executor(self.executor, _get_data)
@@ -322,6 +328,30 @@ class Session:
             r[rec["varcode"]] = rec["value"]
         self.db.insert_data(r, can_replace=True, can_add_stations=False)
         return await self.get_data()
+
+    async def replace_station_data_attr(self, var_data, rec):
+        log.debug("Session.replace_station_data_attr %r %r", var_data, rec)
+        r = dballe.Record()
+        if rec["vt"] == "decimal":
+            r[rec["c"]] = float(rec["v"])
+        elif rec["vt"] == "integer":
+            r[rec["c"]] = int(rec["v"])
+        else:
+            r[rec["c"]] = rec["v"]
+        self.db.attr_insert_station(var_data["i"], r)
+        return await self.get_station_data_attrs(var_data["i"])
+
+    async def replace_data_attr(self, var_data, rec):
+        log.debug("Session.replace_data_attr %r %r", var_data, rec)
+        r = dballe.Record()
+        if rec["vt"] == "decimal":
+            r[rec["c"]] = float(rec["v"])
+        elif var_data["vt"] == "integer":
+            r[rec["c"]] = int(rec["v"])
+        else:
+            r[rec["c"]] = rec["v"]
+        self.db.attr_insert_data(var_data["i"], r)
+        return await self.get_data_attrs(var_data["i"])
 
     async def set_data_limit(self, limit):
         log.debug("Session.set_data_limit %r", limit)
