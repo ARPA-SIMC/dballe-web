@@ -9,8 +9,10 @@ from tornado.platform.asyncio import AsyncIOMainLoop
 import asyncio
 AsyncIOMainLoop().install()
 
+VERSION = "0.1"
 
-class Provami:
+
+class DballeWeb:
     def __init__(self):
         self.db_url = options.db
         self.web_host = options.web_host
@@ -36,7 +38,7 @@ def main():
         options.print_help()
         return 1
 
-    app = Provami()
+    app = DballeWeb()
     app.setup()
     webbrowser.open("http://{}:{}/".format(options.web_host, options.web_port))
 
