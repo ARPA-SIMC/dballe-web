@@ -178,20 +178,20 @@ class DballeWeb
 	this.station_data.update(data);
     }
 
-    async show_station_data_attrs(id)
+    async show_station_data_attrs(var_data, id)
     {
-        console.log("show_station_data_attrs", id);
+        console.log("show_station_data_attrs", var_data, id);
         var data = await this.server.get_station_data_attrs(id);
         console.log("show_station_data_attrs data:", data);
-	this.attrs.update(data);
+	this.attrs.update(var_data, data);
     }
 
-    async show_data_attrs(id)
+    async show_data_attrs(var_data, id)
     {
-        console.log("show_data_attrs", id);
+        console.log("show_data_attrs", var_data, id);
         var data = await this.server.get_data_attrs(id);
         console.log("show_data_attrs data:", data);
-	this.attrs.update(data);
+	this.attrs.update(var_data, data);
     }
 }
 

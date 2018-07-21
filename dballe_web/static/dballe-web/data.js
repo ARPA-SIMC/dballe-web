@@ -132,7 +132,7 @@ class Data
                 new DataEditor(this.dballeweb, el, data);
             } else {
                 this.dballeweb.show_station_data(data.s).then();
-                this.dballeweb.show_data_attrs(data.i).then();
+                this.dballeweb.show_data_attrs(data, data.i).then();
             }
         });
         this.data_limit = $("#data-limit");
@@ -183,7 +183,7 @@ class StationData
             {
                 new StationDataEditor(this.dballeweb, el, station, data);
             } else {
-                this.dballeweb.show_station_data_attrs(data.i).then();
+                this.dballeweb.show_station_data_attrs(data, data.i).then();
             }
         });
     }
@@ -215,26 +215,22 @@ class Attrs
     {
         this.dballeweb = dballeweb;
         this.tbody = $("#attrs tbody");
-        /*
         this.tbody.on("click", "td", evt => {
             let data = $(evt.target.parentNode).data("dballe_data");
             let idx = evt.target.cellIndex;
             let el = $(evt.target);
-            if (idx == 6 && !el.data("dballeweb_editor"))
-            {
-                new Editor(this.dballeweb, el, data);
-            } else {
-                this.dballeweb.show_station_data(data.s).then();
-                this.dballeweb.show_data_attrs(data.i).then();
-            }
+            if (idx == 1 && !el.data("dballeweb_editor"))
+                new AttrsEditor(this.dballeweb, el, data);
         });
-        */
     }
 
-    update(data)
+    update(var_data, data)
     {
-        this.tbody.empty();
+        console.debug("Attrs.update", var_data, data)
+        $("#dballeweb-attr-varcode").text(var_data.c);
+        $("#dballeweb-attr-value").text(var_data.v);
 
+        this.tbody.empty();
         for (var i = 0; i < data.rows.length; ++i)
         {
             var row = data.rows[i];
