@@ -1,19 +1,4 @@
 #!/usr/bin/make -f
 
-BUILDDIR = $(CURDIR)/debian/build
-
 %:
-	dh $@ --buildsystem=cmake --builddirectory=$(BUILDDIR)
-
-#override_dh_auto_install:
-#	# Work around qmake stupidly defaulting to wanting to install unit
-#	# tests, and being either too limited to allow to disable this, or too
-#	# underdocumented to let me figure out how.
-#	dh_auto_install
-#	rm -r debian/provami-qt/usr/tests
-#
-#override_dh_auto_test:
-#	# Work around qmake being too stupid to figure this out by itself, and
-#	# too limited to support configuring this somewhere, or too
-#	# underdocumented to let me figure out how.
-#	dh_auto_test -- LD_LIBRARY_PATH="$$LD_LIBRARY_PATH:`pwd`/provami"
+	dh $@ --with=python3 --buildsystem=pybuild

@@ -2,13 +2,7 @@
 *.o
 *.pyc
 *~
-moc_*.cpp
-Makefile
-/debian/provami-qt
-/debian/provami-qt.substvars
-/debian/provami-qt.debhelper.log
+/debian/dballe-web
+/debian/dballe-web.substvars
+/debian/dballe-web.debhelper.log
 /debian/files
-/src/provami-qt
-/provami/ui_provamimainwindow.h
-/provami/libprovami.so*
-/tests/test-provami

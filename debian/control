@@ -1,16 +1,16 @@
-Source: provami-qt
+Source: dballe-web
 Section: science
 Priority: extra
 Maintainer: Enrico Zini <enrico@enricozini.org>
-Build-Depends: debhelper (>= 9), cmake, libqt5-dev, libqt5webkit5-dev, libdballe-dev
+Build-Depends: debhelper (>= 10), python3-dballe
 Standards-Version: 3.9.2
-Vcs-Svn: https://svn.smr.arpa.emr.it/dballe/provami/trunk
+Vcs-Svn: https://github.com/ARPA-SIMC/provami/
 
-Package: provami-qt
+Package: dballe-web
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: Graphical interface to DB-All.e databases
- provami is a GUI application to visualise and navigate DB-All.e databases.
+ dballe-web is a GUI application to visualise and navigate DB-All.e databases.
  .
  It also allows one to perform simple editing tasks, and to graphically select
  and export data subsets.

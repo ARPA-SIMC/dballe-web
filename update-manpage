@@ -1,2 +1,2 @@
 #!/bin/sh
-help2man --section=1 --no-info --include help2man-extras "$@" > provami-qt.1
+help2man --no-discard-stderr --section=1 --no-info --include help2man-extras "./dballe-web" > dballe-web.1
