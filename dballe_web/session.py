@@ -37,7 +37,7 @@ class Filter:
         return (self.ana_id, self.rep_memo, self.level, self.trange, self.var, self.datemin, self.datemax)
 
     def to_record(self):
-        res = dballe.Record()
+        res = {}
         if self.ana_id is not None:
             res["ana_id"] = self.ana_id
         if self.rep_memo is not None:
@@ -103,7 +103,8 @@ class Revalidator:
     def _revalidate(self):
         try:
             with self.session.db.transaction() as tr:
-                self.session.explorer.revalidate(tr)
+                with self.session.explorer.rebuild() as updater:
+                    updater.add_db(tr)
             self.current_future = None
             self.session.initialized = True
         except Exception:
@@ -116,6 +117,10 @@ class Revalidator:
         await self.current_future
 
 
+def station_to_dict(s):
+    return (s.report, s.id, s.lat, s.lon, s.ident)
+
+
 class Session:
     def __init__(self, db_url):
         self.loop = asyncio.get_event_loop()
@@ -124,7 +129,7 @@ class Session:
         self.db = dballe.DB.connect_from_url(self.db_url)
         self.filter = Filter()
         self.data_limit = 20
-        self.explorer = dballe.Explorer()
+        self.explorer = dballe.DBExplorer()
         self.initialized = False
         self._revalidate = Revalidator(self)
 
@@ -144,9 +149,9 @@ class Session:
         stations_disabled = []
         for station in self.explorer.all_stations:
             if station in current_stations_set:
-                stations.append(station)
+                stations.append(station_to_dict(station))
             else:
-                stations_disabled.append(station)
+                stations_disabled.append(station_to_dict(station))
 
         stats = self.explorer.stats
 
@@ -214,12 +219,12 @@ class Session:
             res = []
             with self.db.transaction() as tr:
                 for rec in tr.query_data(query):
-                    var = rec.var(rec["var"])
+                    var = rec["var"]
                     row = {
                         "i": rec["context_id"],
                         "r": rec["rep_memo"],
                         "s": rec["ana_id"],
-                        "c": rec["var"],
+                        "c": var.code,
                         "l": tuple(rec["level"]),
                         "t": tuple(rec["trange"]),
                         "d": _export_datetime(rec["datetime"]),
@@ -235,25 +240,24 @@ class Session:
 
     async def get_station_data(self, id_station):
         def _get_data():
-            query = dballe.Record()
-            query["ana_id"] = id_station
+            query = {"ana_id": id_station}
             station = None
             res = []
             with self.db.transaction() as tr:
                 for rec in tr.query_stations(query):
                     station = {
                         "id": rec["ana_id"],
-                        "lat": rec["lat"],
-                        "lon": rec["lon"],
+                        "lat": float(rec["lat"]),
+                        "lon": float(rec["lon"]),
                         "ident": rec["ident"],
                         "rep_memo": rec["rep_memo"],
                     }
 
                 for rec in tr.query_station_data(query):
-                    var = rec.var(rec["var"])
+                    var = rec["var"]
                     row = {
                         "i": rec["context_id"],
-                        "c": rec["var"],
+                        "c": var.code,
                         "v": var.enq(),
                         "vt": var.info.type,
                     }
@@ -269,7 +273,7 @@ class Session:
             with self.db.transaction() as tr:
                 attrs = tr.attr_query_station(id)
             res = []
-            for k, var in attrs.varitems():
+            for k, var in attrs.items():
                 row = {
                     "c": k,
                     "v": var.enq(),
@@ -287,7 +291,7 @@ class Session:
             with self.db.transaction() as tr:
                 attrs = tr.attr_query_data(id)
             res = []
-            for k, var in attrs.varitems():
+            for k, var in attrs.items():
                 row = {
                     "c": k,
                     "v": var.enq(),
@@ -302,8 +306,7 @@ class Session:
 
     async def replace_station_data(self, rec):
         log.debug("Session.replace_station_data %r", rec)
-        r = dballe.Record()
-        r["ana_id"] = int(rec["ana_id"])
+        r = {"ana_id": int(rec["ana_id"])}
         if rec["vt"] == "decimal":
             r[rec["varcode"]] = float(rec["value"])
         elif rec["vt"] == "integer":
@@ -315,7 +318,7 @@ class Session:
 
     async def replace_data(self, rec):
         log.debug("Session.replace_data %r", rec)
-        r = dballe.Record()
+        r = {}
         r["ana_id"] = int(rec["ana_id"])
         r["level"] = tuple(rec["level"])
         r["trange"] = tuple(rec["trange"])
@@ -331,7 +334,7 @@ class Session:
 
     async def replace_station_data_attr(self, var_data, rec):
         log.debug("Session.replace_station_data_attr %r %r", var_data, rec)
-        r = dballe.Record()
+        r = {}
         if rec["vt"] == "decimal":
             r[rec["c"]] = float(rec["v"])
         elif rec["vt"] == "integer":
@@ -343,7 +346,7 @@ class Session:
 
     async def replace_data_attr(self, var_data, rec):
         log.debug("Session.replace_data_attr %r %r", var_data, rec)
-        r = dballe.Record()
+        r = {}
         if rec["vt"] == "decimal":
             r[rec["c"]] = float(rec["v"])
         elif var_data["vt"] == "integer":
