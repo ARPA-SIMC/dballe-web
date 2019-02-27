@@ -17,7 +17,7 @@ setup(
     # long_description=''
     author=['Enrico Zini'],
     author_email=['enrico@enricozini.org'],
-    url='https://github.com/ARPA-SIMC/provami/',
+    url='https://github.com/ARPA-SIMC/dballe-web/',
     requires=["tornado", "dballe"],
     license="http://www.gnu.org/licenses/gpl-3.0.html",
     packages=['dballe_web'],

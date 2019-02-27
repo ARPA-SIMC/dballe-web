@@ -1,6 +1,6 @@
 Summary: Graphical interface to DB-All.e databases
 Name: dballe-web
-Version: 2.0
+Version: 0.1
 Release: 1
 License: GPL
 Group: Applications/Meteo
@@ -15,6 +15,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
 BuildRequires: %{python3_vers}-devel
 Requires: %{python3_vers}-dballe
+Requires: %{python3_vers}-tornado
 Requires: %{python3_vers}numpy
 
 %description
