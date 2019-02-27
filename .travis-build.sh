@@ -25,15 +25,15 @@ then
     dnf copr enable -y simc/stable
 fi
 
-$builddep -y fedora/SPECS/provami.spec
+$builddep -y fedora/SPECS/dballe-web.spec
 
 if [[ $image =~ ^fedora: || $image =~ ^centos: ]]
 then
-    pkgname=provami-$(git describe --abbrev=0 --tags --match='v*' | sed -e 's,^v,,g')
+    pkgname=dballe-web-$(git describe --abbrev=0 --tags --match='v*' | sed -e 's,^v,,g')
     mkdir -p ~/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
-    cp fedora/SPECS/provami.spec ~/rpmbuild/SPECS/provami.spec
+    cp fedora/SPECS/dballe-web.spec ~/rpmbuild/SPECS/dballe-web.spec
     git archive --prefix=$pkgname/ --format=tar HEAD | gzip -c > ~/rpmbuild/SOURCES/$pkgname.tar.gz
-    rpmbuild -ba ~/rpmbuild/SPECS/provami.spec
+    rpmbuild -ba ~/rpmbuild/SPECS/dballe-web.spec
     find ~/rpmbuild/{RPMS,SRPMS}/ -name "${pkgname}*rpm" -exec cp -v {} . \;
     # TODO upload ${pkgname}*.rpm to github release on deploy stage
 else

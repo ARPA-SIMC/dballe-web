@@ -1,32 +1,29 @@
-PROVAMI
+DB-All.e-web
 ===============================================================
 
-Build status
-------------
+[![Build Status](https://badges.herokuapp.com/travis/ARPA-SIMC/dballe-web?branch=master&env=DOCKER_IMAGE=centos:7&label=centos7)](https://travis-ci.org/ARPA-SIMC/dballe-web)
+[![Build Status](https://badges.herokuapp.com/travis/ARPA-SIMC/dballe-web?branch=master&env=DOCKER_IMAGE=fedora:28&label=fedora28)](https://travis-ci.org/ARPA-SIMC/dballe-web)
+[![Build Status](https://badges.herokuapp.com/travis/ARPA-SIMC/dballe-web?branch=master&env=DOCKER_IMAGE=fedora:29&label=fedora29)](https://travis-ci.org/ARPA-SIMC/dballe-web)
+[![Build Status](https://badges.herokuapp.com/travis/ARPA-SIMC/dballe-web?branch=master&env=DOCKER_IMAGE=fedora:rawhide&label=fedorarawhide)](https://travis-ci.org/ARPA-SIMC/dballe-web)
 
-| Environment | Status |
-| ----------- | ------ |
-| CentOS 7    | [![Build Status](https://badges.herokuapp.com/travis/ARPA-SIMC/provami?branch=master&env=DOCKER_IMAGE=centos:7&label=centos7)](https://travis-ci.org/ARPA-SIMC/provami) |
-| Fedora 26   | [![Build Status](https://badges.herokuapp.com/travis/ARPA-SIMC/provami?branch=master&env=DOCKER_IMAGE=fedora:26&label=fedora26)](https://travis-ci.org/ARPA-SIMC/provami) |
-| Fedora 27   | [![Build Status](https://badges.herokuapp.com/travis/ARPA-SIMC/provami?branch=master&env=DOCKER_IMAGE=fedora:27&label=fedora27)](https://travis-ci.org/ARPA-SIMC/provami) |
-| Fedora 28   | [![Build Status](https://badges.herokuapp.com/travis/ARPA-SIMC/provami?branch=master&env=DOCKER_IMAGE=fedora:28&label=fedora28)](https://travis-ci.org/ARPA-SIMC/provami) |
+[![Build Status](https://copr.fedorainfracloud.org/coprs/simc/stable/package/dballe-web/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/simc/stable/package/dballe-web/)
 
 Introduction
 ------------
 
-"provami" is a GUI application to visualise and navigate DB-All.e databases.
+DB-All.e-web is a GUI application to visualise and navigate DB-All.e databases.
 (see https://github.com/ARPA-SIMC/dballe)
 
 It also allows to perform simple editing tasks, and to graphically select and
 export data subsets.
 
-It's a qt version of the old "provami" included in DB-All.e sources.
+It's a new version of the old "provami" (see https://github.com/ARPA-SIMC/provami)
 
 Contact and copyright information
 ---------------------------------
 
 The author of DB-ALLe is Enrico Zini <enrico@enricozini.com>
 
-Provami is Copyright (C) 2015-2018 ARPAE-SIMC <urpsim@arpae.it>
+Provami is Copyright (C) 2015-2019 ARPAE-SIMC <urpsim@arpae.it>
 
 Provami is licensed under the terms of the GNU General Public License version 2.0

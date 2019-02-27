@@ -4,7 +4,7 @@ Priority: extra
 Maintainer: Enrico Zini <enrico@enricozini.org>
 Build-Depends: debhelper (>= 10), python3-dballe
 Standards-Version: 3.9.2
-Vcs-Svn: https://github.com/ARPA-SIMC/provami/
+Vcs-Svn: https://github.com/ARPA-SIMC/dballe-web/
 
 Package: dballe-web
 Architecture: any
