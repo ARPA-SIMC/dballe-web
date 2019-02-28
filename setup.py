@@ -5,7 +5,7 @@ import sys
 import os.path
 from distutils.core import setup
 
-with open(os.path.join(os.path.dirname(sys.argv[0]), 'egt'), "rt") as fd:
+with open("dballe-web") as fd:
     for line in fd:
         if line.startswith('VERSION ='):
             version = eval(line.split(' = ')[-1])
