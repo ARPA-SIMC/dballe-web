@@ -7,3 +7,4 @@
 /debian/dballe-web.substvars
 /debian/dballe-web.debhelper.log
 /debian/files
+/build

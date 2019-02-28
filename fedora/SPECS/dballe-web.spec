@@ -24,29 +24,29 @@ Requires: %{python3_vers}numpy
  It also allows to perform simple editing tasks, and to graphically select and
  export data subsets.
 
+%global debug_package %{nil}
 
 %prep
 %setup -q -n %{name}-%{version}-%{release}
 
 %build
-%{python3_vers} setup.py build
+%py3_build
 
 %install
 [ "%{buildroot}" != / ] && rm -rf "%{buildroot}"
-
-%{python3_vers} setup.py install --skip-build --root %{buildroot}
+%py3_install
 
 %check
-%{python3_vers} setup.py test
 
 %clean
 [ "%{buildroot}" != / ] && rm -rf "%{buildroot}"
 
 %files
 %defattr(-,root,root,-)
-#{_datadir}/provami/mapview
-#{_bindir}/provami-qt
-#doc #{_mandir}/man1/provami-qt.1.gz
+%{_bindir}/dballe-web
+%dir %{python3_sitelib}/dballe_web
+%{python3_sitelib}/dballe_web/*
+%{python3_sitelib}/dballe_web*egg-info
 
 %post
 
