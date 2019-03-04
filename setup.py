@@ -23,4 +23,5 @@ setup(
     packages=['dballe_web'],
     scripts=['dballe-web'],
     include_package_data=True,
+    test_suite='tests.test_web_api',
 )
