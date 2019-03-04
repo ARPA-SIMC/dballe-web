@@ -45,9 +45,34 @@ class TestInit(TestWebAPIMixin, AsyncTestCase):
             self.assertEqual(res, {
                 "time": 150,
                 'explorer': {
-                    'filter': {'ana_id': None, 'datemax': None, 'datemin': None, 'level': None, 'rep_memo': None, 'trange': None, 'var': None},
+                    "data_limit": self.session.data_limit,
+                    "db_url": self.session.db_url,
+                    'filter': {
+                        'ana_id': None,
+                        'datemax': None,
+                        'datemin': None,
+                        'level': None,
+                        'rep_memo': None,
+                        'trange': None,
+                        'var': None,
+                        'latmin': None,
+                        'latmax': None,
+                        'lonmin': None,
+                        'lonmax': None,
+                    },
+                    'filter_cmdline': '',
                     'initialized': True,
-                    'stations': [], 'stations_disabled': [], 'level': [], 'rep_memo': [], 'trange': [], 'var': [],
+                    'stations': [],
+                    'stations_disabled': [],
+                    'level': [],
+                    'rep_memo': [],
+                    'trange': [],
+                    'var': [],
+                    'stats': {
+                        'datetime_min': None,
+                        'datetime_max': None,
+                        'count': 0
+                    },
                 },
             })
 
