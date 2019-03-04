@@ -1,2 +1,3 @@
 recursive-include dballe_web/static *
 include dballe_web/templates/*.html
+include tests/test_web_api.py
