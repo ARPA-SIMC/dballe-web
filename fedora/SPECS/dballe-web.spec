@@ -42,7 +42,7 @@ Requires: %{python3_vers}-numpy
 %py3_install
 
 %check
-%{python3_vers} -m unittest tests/test_web_api.py
+%{python3_vers} setup.py test
 
 %clean
 [ "%{buildroot}" != / ] && rm -rf "%{buildroot}"
