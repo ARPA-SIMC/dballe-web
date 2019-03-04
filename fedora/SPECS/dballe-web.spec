@@ -1,10 +1,13 @@
+# Note: define _srcarchivename in Travis build only.
+%{!?srcarchivename: %global srcarchivename %{name}-%{version}-%{release}}
+
 Summary: Graphical interface to DB-All.e databases
 Name: dballe-web
 Version: 0.1
 Release: 2
 License: GPL
 Group: Applications/Meteo
-Source0: https://github.com/arpa-simc/%{name}/archive/v%{version}-%{release}.tar.gz#/%{name}-%{version}-%{release}.tar.gz
+Source0: https://github.com/arpa-simc/%{name}/archive/v%{version}-%{release}.tar.gz#/%{srcarchivename}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
 %if 0%{?rhel} == 7
@@ -27,7 +30,7 @@ Requires: %{python3_vers}-numpy
 %global debug_package %{nil}
 
 %prep
-%setup -q -n %{name}-%{version}-%{release}
+%setup -q -n %{srcarchivename}
 
 %build
 %py3_build

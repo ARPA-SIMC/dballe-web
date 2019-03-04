@@ -19,7 +19,7 @@ then
     pkgcmd="dnf"
     builddep="dnf builddep"
     sed -i '/^tsflags=/d' /etc/dnf/dnf.conf
-    dnf install -y @buildsys-build
+    dnf install -y --allowerasing @buildsys-build
     dnf install -y 'dnf-command(builddep)'
     dnf install -y git
     dnf copr enable -y simc/stable
@@ -29,11 +29,11 @@ $builddep -y fedora/SPECS/dballe-web.spec
 
 if [[ $image =~ ^fedora: || $image =~ ^centos: ]]
 then
-    pkgname=dballe-web-$(git describe --abbrev=0 --tags --match='v*' | sed -e 's,^v,,g')
+    pkgname=dballe-web-master
     mkdir -p ~/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
     cp fedora/SPECS/dballe-web.spec ~/rpmbuild/SPECS/dballe-web.spec
     git archive --prefix=$pkgname/ --format=tar HEAD | gzip -c > ~/rpmbuild/SOURCES/$pkgname.tar.gz
-    rpmbuild -ba ~/rpmbuild/SPECS/dballe-web.spec
+    rpmbuild -ba --define "srcarchivename $pkgname" ~/rpmbuild/SPECS/dballe-web.spec
     find ~/rpmbuild/{RPMS,SRPMS}/ -name "${pkgname}*rpm" -exec cp -v {} . \;
     # TODO upload ${pkgname}*.rpm to github release on deploy stage
 else
