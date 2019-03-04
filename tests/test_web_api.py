@@ -82,6 +82,8 @@ class TestBasic(TestWebAPIMixin, AsyncTestCase):
             self.assertEqual(res, {
                 "time": 100,
                 "explorer": {
+                    "data_limit": self.session.data_limit,
+                    "db_url": self.session.db_url,
                     "filter": {
                         'ana_id': None,
                         'datemax': None,
@@ -89,19 +91,27 @@ class TestBasic(TestWebAPIMixin, AsyncTestCase):
                         'level': None,
                         'rep_memo': None,
                         'trange': None,
-                        'var': None
+                        'var': None,
+                        'latmin': None,
+                        'latmax': None,
+                        'lonmin': None,
+                        'lonmax': None,
                     },
+                    'filter_cmdline': '',
                     'initialized': True,
                     'stations': [
-                        ('synop', 12.3456, 76.5432, None),
-                        ('temp', 12.3456, 76.5432, None)],
+                        ('synop', 1, 12.3456, 76.5432, None),
+                        ('temp', 2, 12.3456, 76.5432, None)],
                     'stations_disabled': [],
                     'level': [((10, 11, 15, 22), 'Layer from [10 11] to [15 22]')],
                     'trange': [((20, 111, 222), '20 111 222')],
                     'rep_memo': ['synop', 'temp'],
                     'var': ['B01011', 'B01012'],
-                    # 'datemax': '1945-04-25 08:00:00',
-                    # 'datemin': '1945-04-25 08:00:00',
+                    'stats': {
+                        'count': 4,
+                        'datetime_min': '1945-04-25 08:00:00',
+                        'datetime_max': '1945-04-25 08:00:00',
+                    },
                 },
             })
 
