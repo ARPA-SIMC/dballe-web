@@ -4,7 +4,7 @@
 Summary: Graphical interface to DB-All.e databases
 Name: dballe-web
 Version: 0.1
-Release: 2
+Release: 3
 License: GPL
 Group: Applications/Meteo
 Source0: https://github.com/arpa-simc/%{name}/archive/v%{version}-%{release}.tar.gz#/%{srcarchivename}.tar.gz
@@ -62,5 +62,8 @@ Requires: %{python3_vers}-numpy
 %postun
 
 %changelog
-* Wed Feb 27 2019 Daniele Branchini <dbranchini@arpae.it> - 0.1-1%{dist}
+* Mon Mar  4 2019 Emanuele Di Giacomo <edigiacomo@arpae.it> - 0.1-3
+- Added missing files (#5)
+
+* Wed Feb 27 2019 Daniele Branchini <dbranchini@arpae.it> - 0.1-1
 - first build
