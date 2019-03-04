@@ -219,7 +219,7 @@ class Session:
             res = []
             with self.db.transaction() as tr:
                 for rec in tr.query_data(query):
-                    var = rec["var"]
+                    var = rec["variable"]
                     row = {
                         "i": rec["context_id"],
                         "r": rec["rep_memo"],
@@ -228,7 +228,7 @@ class Session:
                         "l": tuple(rec["level"]),
                         "t": tuple(rec["trange"]),
                         "d": _export_datetime(rec["datetime"]),
-                        "v": var.enq(),
+                        "v": var.get(),
                         "vt": var.info.type,
                     }
                     if var.info.type in ("integer", "decimal"):
