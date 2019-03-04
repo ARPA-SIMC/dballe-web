@@ -3,7 +3,7 @@
 
 import sys
 import os.path
-from distutils.core import setup
+from setuptools import setup
 
 with open("dballe-web") as fd:
     for line in fd:
@@ -22,4 +22,5 @@ setup(
     license="http://www.gnu.org/licenses/gpl-3.0.html",
     packages=['dballe_web'],
     scripts=['dballe-web'],
+    include_package_data=True,
 )
