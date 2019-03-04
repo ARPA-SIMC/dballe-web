@@ -55,7 +55,7 @@ class TestInit(TestWebAPIMixin, AsyncTestCase):
 class TestBasic(TestWebAPIMixin, AsyncTestCase):
     def setUp(self):
         super().setUp()
-        self.data = dballe.Record(
+        self.data = dict(
                 lat=12.34560, lon=76.54320,
                 mobile=0,
                 datetime=datetime.datetime(1945, 4, 25, 8, 0, 0),
@@ -65,7 +65,7 @@ class TestBasic(TestWebAPIMixin, AsyncTestCase):
                 B01011="Hey Hey!!",
                 B01012=500)
         self.session.db.insert_data(self.data, False, True)
-        self.data = dballe.Record(
+        self.data = dict(
                 lat=12.34560, lon=76.54320,
                 mobile=0,
                 datetime=datetime.datetime(1945, 4, 25, 8, 0, 0),
