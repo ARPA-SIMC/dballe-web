@@ -45,8 +45,13 @@ Requires: %{python3_vers}-numpy
 %defattr(-,root,root,-)
 %{_bindir}/dballe-web
 %dir %{python3_sitelib}/dballe_web
-%{python3_sitelib}/dballe_web/*
-%{python3_sitelib}/dballe_web*egg-info
+%{python3_sitelib}/dballe_web/*.py
+%dir %{python3_sitelib}/dballe_web/static
+%{python3_sitelib}/dballe_web/static/*
+%dir %{python3_sitelib}/dballe_web/templates
+%{python3_sitelib}/dballe_web/templates/*.html
+%{python3_sitelib}/dballe_web-*egg-info
+%{python3_sitelib}/dballe_web/__pycache__
 
 %post
 
