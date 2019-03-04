@@ -1,0 +1,2 @@
+recursive-include dballe_web/static *
+include dballe_web/templates/*.html
