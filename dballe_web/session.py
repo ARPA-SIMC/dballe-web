@@ -126,7 +126,7 @@ class Session:
         self.loop = asyncio.get_event_loop()
         self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=1)
         self.db_url = db_url
-        self.db = dballe.DB.connect_from_url(self.db_url)
+        self.db = dballe.DB.connect(self.db_url)
         self.filter = Filter()
         self.data_limit = 20
         self.explorer = dballe.DBExplorer()

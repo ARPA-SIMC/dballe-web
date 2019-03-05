@@ -17,6 +17,8 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 %endif
 
 BuildRequires: %{python3_vers}-devel
+BuildRequires: %{python3_vers}-tornado
+BuildRequires: %{python3_vers}-dballe
 Requires: %{python3_vers}-dballe
 Requires: %{python3_vers}-tornado
 Requires: %{python3_vers}-numpy
@@ -40,6 +42,7 @@ Requires: %{python3_vers}-numpy
 %py3_install
 
 %check
+%{python3_vers} setup.py test
 
 %clean
 [ "%{buildroot}" != / ] && rm -rf "%{buildroot}"
