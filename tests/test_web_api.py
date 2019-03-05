@@ -1,6 +1,5 @@
 from dballe_web.webapi import WebAPI
 from dballe_web.session import Session
-import dballe
 import datetime
 from dballe_web.unittest import async_test, AsyncTestCase
 from unittest import mock
