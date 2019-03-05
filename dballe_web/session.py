@@ -262,11 +262,11 @@ class Session:
                     }
 
                 for rec in tr.query_station_data(query):
-                    var = rec["var"]
+                    var = rec["variable"]
                     row = {
                         "i": rec["context_id"],
                         "c": var.code,
-                        "v": var.enq(),
+                        "v": var.get(),
                         "vt": var.info.type,
                     }
                     if var.info.type in ("integer", "decimal"):
@@ -285,7 +285,7 @@ class Session:
             for k, var in attrs.items():
                 row = {
                     "c": k,
-                    "v": var.enq(),
+                    "v": var.get(),
                     "vt": var.info.type,
                 }
                 if var.info.type in ("integer", "decimal"):
