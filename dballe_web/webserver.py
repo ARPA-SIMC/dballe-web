@@ -105,7 +105,7 @@ class Export(tornado.web.RequestHandler):
         else:
             self.set_header("Content-Type", "application/octet-stream")
         writer = WriteToHandler(self)
-        yield from self.application.session.export(format, writer)
+        yield to_tornado_future(asyncio.ensure_future(self.application.session.export(format, writer)))
 
 
 class Application(tornado.web.Application):
