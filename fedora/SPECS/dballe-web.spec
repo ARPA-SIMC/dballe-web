@@ -43,7 +43,7 @@ Requires: %{python3_vers}-numpy
 %py3_install
 
 %check
-%{python3_vers} setup.py test
+%{__python3} setup.py test
 
 %clean
 [ "%{buildroot}" != / ] && rm -rf "%{buildroot}"
