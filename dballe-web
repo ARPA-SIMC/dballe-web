@@ -16,12 +16,17 @@ class DballeWeb:
     def __init__(self):
         self.db_url = options.db
         self.web_host = "localhost"
-        self.web_port = 8000
+        self.web_port = None
 
     def setup(self):
-        # Set up web server
+        # Set up web server on a free port
         self.application = Application(self.db_url)
-        self.application.listen(self.web_port, address=self.web_host)
+
+        import tornado.netutil
+        sockets = tornado.netutil.bind_sockets(0, '127.0.0.1')
+        self.web_port = sockets[0].getsockname()[:2][1]
+        server = tornado.httpserver.HTTPServer(self.application)
+        server.add_sockets(sockets)
 
     @asyncio.coroutine
     def async_setup(self):
