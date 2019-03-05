@@ -23,14 +23,16 @@ class DballeWeb:
         self.application = Application(self.db_url)
         self.application.listen(self.web_port, address=self.web_host)
 
-    async def async_setup(self):
-        await self.application.async_setup()
+    @asyncio.coroutine
+    def async_setup(self):
+        yield from self.application.async_setup()
 
 
 def main():
     define("web_host", default="127.0.0.1", help="listening hostname for web interface")
     define("web_port", type=int, default=8000, help="listening port for web interface")
-    define("db", type=str, metavar="dballe_url", default=os.environ.get("DBA_DB"), help="DB-All.e database to connect to")
+    define("db", type=str, metavar="dballe_url", default=os.environ.get("DBA_DB"),
+           help="DB-All.e database to connect to")
     options.parse_command_line()
 
     if not options.db:

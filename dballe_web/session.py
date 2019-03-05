@@ -111,10 +111,11 @@ class Revalidator:
             log.exception("Revalidate failed")
             return []
 
-    async def __call__(self):
+    @asyncio.coroutine
+    def __call__(self):
         if self.current_future is None:
             self.current_future = self.session.loop.run_in_executor(self.session.executor, self._revalidate)
-        await self.current_future
+        yield from self.current_future
 
 
 def station_to_dict(s):
@@ -174,7 +175,8 @@ class Session:
             "db_url": self.db_url,
         }
 
-    async def export(self, format, out):
+    @asyncio.coroutine
+    def export(self, format, out):
         """
         Export the currently selected data to out.
 
@@ -186,31 +188,35 @@ class Session:
             def exporter():
                 with self.db.transaction() as tr:
                     tr.export_to_file(self.filter.to_record(), format.upper(), out)
-            await self.loop.run_in_executor(self.executor, exporter)
+            yield from self.loop.run_in_executor(self.executor, exporter)
         elif format == "csv":
             def exporter():
                 with self.db.transaction() as tr:
                     dbacsv.export(tr, self.filter.to_record(), out)
-            await self.loop.run_in_executor(self.executor, exporter)
+            yield from self.loop.run_in_executor(self.executor, exporter)
 
-    async def init(self):
+    @asyncio.coroutine
+    def init(self):
         if not self.initialized:
             log.debug("Async setup")
-            await self._revalidate()
+            yield from self._revalidate()
         return self.explorer_to_dict()
 
-    async def set_filter(self, flt):
+    @asyncio.coroutine
+    def set_filter(self, flt):
         log.debug("Session.set_filter")
         self.filter = Filter.from_dict(flt)
-        await self.loop.run_in_executor(self.executor, self.explorer.set_filter, self.filter.to_record())
+        yield from self.loop.run_in_executor(self.executor, self.explorer.set_filter, self.filter.to_record())
         return self.explorer_to_dict()
 
-    async def refresh_filter(self):
+    @asyncio.coroutine
+    def refresh_filter(self):
         log.debug("Session.refresh_filter")
-        await self._revalidate()
+        yield from self._revalidate()
         return self.explorer_to_dict()
 
-    async def get_data(self):
+    @asyncio.coroutine
+    def get_data(self):
         log.debug("Session.get_data")
 
         def _get_data():
@@ -236,10 +242,11 @@ class Session:
                         row["vs"] = var.info.scale
                     res.append(row)
             return res
-        records = await self.loop.run_in_executor(self.executor, _get_data)
+        records = yield from self.loop.run_in_executor(self.executor, _get_data)
         return records
 
-    async def get_station_data(self, id_station):
+    @asyncio.coroutine
+    def get_station_data(self, id_station):
         def _get_data():
             query = {"ana_id": id_station}
             station = None
@@ -266,10 +273,11 @@ class Session:
                         row["vs"] = var.info.scale
                     res.append(row)
                 return station, res
-        station, records = await self.loop.run_in_executor(self.executor, _get_data)
+        station, records = yield from self.loop.run_in_executor(self.executor, _get_data)
         return station, records
 
-    async def get_station_data_attrs(self, id):
+    @asyncio.coroutine
+    def get_station_data_attrs(self, id):
         def _get_data():
             with self.db.transaction() as tr:
                 attrs = tr.attr_query_station(id)
@@ -284,10 +292,11 @@ class Session:
                     row["vs"] = var.info.scale
                 res.append(row)
             return res
-        records = await self.loop.run_in_executor(self.executor, _get_data)
+        records = yield from self.loop.run_in_executor(self.executor, _get_data)
         return records
 
-    async def get_data_attrs(self, id):
+    @asyncio.coroutine
+    def get_data_attrs(self, id):
         def _get_data():
             with self.db.transaction() as tr:
                 attrs = tr.attr_query_data(id)
@@ -302,10 +311,11 @@ class Session:
                     row["vs"] = var.info.scale
                 res.append(row)
             return res
-        records = await self.loop.run_in_executor(self.executor, _get_data)
+        records = yield from self.loop.run_in_executor(self.executor, _get_data)
         return records
 
-    async def replace_station_data(self, rec):
+    @asyncio.coroutine
+    def replace_station_data(self, rec):
         log.debug("Session.replace_station_data %r", rec)
         r = {"ana_id": int(rec["ana_id"])}
         if rec["vt"] == "decimal":
@@ -315,9 +325,10 @@ class Session:
         else:
             r[rec["varcode"]] = rec["value"]
         self.db.insert_station_data(r, can_replace=True, can_add_stations=False)
-        return await self.get_station_data(rec["ana_id"])
+        return (yield from self.get_station_data(rec["ana_id"]))
 
-    async def replace_data(self, rec):
+    @asyncio.coroutine
+    def replace_data(self, rec):
         log.debug("Session.replace_data %r", rec)
         r = {}
         r["ana_id"] = int(rec["ana_id"])
@@ -331,9 +342,10 @@ class Session:
         else:
             r[rec["varcode"]] = rec["value"]
         self.db.insert_data(r, can_replace=True, can_add_stations=False)
-        return await self.get_data()
+        return (yield from self.get_data())
 
-    async def replace_station_data_attr(self, var_data, rec):
+    @asyncio.coroutine
+    def replace_station_data_attr(self, var_data, rec):
         log.debug("Session.replace_station_data_attr %r %r", var_data, rec)
         r = {}
         if rec["vt"] == "decimal":
@@ -343,9 +355,10 @@ class Session:
         else:
             r[rec["c"]] = rec["v"]
         self.db.attr_insert_station(var_data["i"], r)
-        return await self.get_station_data_attrs(var_data["i"])
+        return (yield from self.get_station_data_attrs(var_data["i"]))
 
-    async def replace_data_attr(self, var_data, rec):
+    @asyncio.coroutine
+    def replace_data_attr(self, var_data, rec):
         log.debug("Session.replace_data_attr %r %r", var_data, rec)
         r = {}
         if rec["vt"] == "decimal":
@@ -355,9 +368,10 @@ class Session:
         else:
             r[rec["c"]] = rec["v"]
         self.db.attr_insert_data(var_data["i"], r)
-        return await self.get_data_attrs(var_data["i"])
+        return (yield from self.get_data_attrs(var_data["i"]))
 
-    async def set_data_limit(self, limit):
+    @asyncio.coroutine
+    def set_data_limit(self, limit):
         log.debug("Session.set_data_limit %r", limit)
         self.data_limit = int(limit) if limit else None
-        return await self.get_data()
+        return (yield from self.get_data())
