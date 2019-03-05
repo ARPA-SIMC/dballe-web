@@ -3,6 +3,8 @@ import json
 import tornado.ioloop
 import tornado.web
 from tornado.web import url
+from tornado.platform.asyncio import to_tornado_future
+from tornado import gen
 from .webapi import WebAPI, WebAPIError
 from .session import Session
 import datetime
@@ -25,13 +27,13 @@ class RestGET(tornado.web.RequestHandler):
         self.function = function
         self.kwargs = kwargs
 
-    @asyncio.coroutine
+    @gen.coroutine
     def get(self, **kwargs):
         self.kwargs.update(kwargs)
         for name, vals in self.request.query_arguments.items():
             self.kwargs[name] = vals[-1]
         try:
-            self.write((yield from self.application.webapi(self.function, **self.kwargs)))
+            self.write((yield to_tornado_future(self.application.webapi(self.function, **self.kwargs))))
         except WebAPIError as e:
             self.set_status(e.code, str(e))
             self.write({
@@ -49,13 +51,13 @@ class RestPOST(tornado.web.RequestHandler):
         self.function = function
         self.kwargs = kwargs
 
-    @asyncio.coroutine
+    @gen.coroutine
     def post(self, **kwargs):
         args = json.loads(self.request.body.decode("utf8"))
         args.update(kwargs)
         args.update(self.kwargs)
         try:
-            self.write((yield from self.application.webapi(self.function, **args)))
+            self.write((yield to_tornado_future(self.application.webapi(self.function, **args))))
         except WebAPIError as e:
             self.set_status(e.code, str(e))
             self.write({
