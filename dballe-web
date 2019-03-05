@@ -23,6 +23,7 @@ class DballeWeb:
         self.application = Application(self.db_url)
 
         import tornado.netutil
+        import tornado.httpserver
         sockets = tornado.netutil.bind_sockets(0, '127.0.0.1')
         self.web_port = sockets[0].getsockname()[:2][1]
         server = tornado.httpserver.HTTPServer(self.application)
