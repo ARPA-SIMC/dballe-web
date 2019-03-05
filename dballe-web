@@ -15,8 +15,8 @@ VERSION = "0.1"
 class DballeWeb:
     def __init__(self):
         self.db_url = options.db
-        self.web_host = options.web_host
-        self.web_port = options.web_port
+        self.web_host = "localhost"
+        self.web_port = 8000
 
     def setup(self):
         # Set up web server
@@ -42,7 +42,7 @@ def main():
 
     app = DballeWeb()
     app.setup()
-    url = "http://{}:{}/".format(options.web_host, options.web_port)
+    url = "http://{}:{}/".format(app.web_host, app.web_port)
     print("dballe-web URL:", url)
     webbrowser.open(url)
 
