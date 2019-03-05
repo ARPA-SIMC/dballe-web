@@ -189,7 +189,8 @@ class Session:
             await self.loop.run_in_executor(self.executor, exporter)
         elif format == "csv":
             def exporter():
-                dbacsv.export(self.db, self.filter.to_record(), out)
+                with self.db.transaction() as tr:
+                    dbacsv.export(tr, self.filter.to_record(), out)
             await self.loop.run_in_executor(self.executor, exporter)
 
     async def init(self):
