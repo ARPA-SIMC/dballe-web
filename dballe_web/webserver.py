@@ -33,7 +33,8 @@ class RestGET(tornado.web.RequestHandler):
         for name, vals in self.request.query_arguments.items():
             self.kwargs[name] = vals[-1]
         try:
-            self.write((yield to_tornado_future(self.application.webapi(self.function, **self.kwargs))))
+            result = yield to_tornado_future(self.application.webapi(self.function, **self.kwargs))
+            self.write(result)
         except WebAPIError as e:
             self.set_status(e.code, str(e))
             self.write({
