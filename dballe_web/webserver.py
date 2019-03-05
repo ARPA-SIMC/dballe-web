@@ -96,7 +96,7 @@ class Export(tornado.web.RequestHandler):
     """
     Download data selected in the current section
     """
-    @asyncio.coroutine
+    @gen.coroutine
     def get(self, format, **kwargs):
         fname = datetime.datetime.now().strftime("%Y%m%d-%H%M")
         self.set_header("Content-Disposition", 'attachment; filename="{}.{}"'.format(fname, format))
@@ -105,8 +105,7 @@ class Export(tornado.web.RequestHandler):
         else:
             self.set_header("Content-Type", "application/octet-stream")
         writer = WriteToHandler(self)
-        for f in self.application.session.export(format, writer):
-            yield to_tornado_future(f)
+        yield to_tornado_future(asyncio.ensure_future(self.application.session.export(format, writer)))
 
 
 class Application(tornado.web.Application):
