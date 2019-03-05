@@ -9,7 +9,7 @@ from tornado.platform.asyncio import AsyncIOMainLoop
 import asyncio
 AsyncIOMainLoop().install()
 
-VERSION = "0.1"
+VERSION = "0.2"
 
 
 class DballeWeb:
