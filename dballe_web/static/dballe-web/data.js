@@ -27,7 +27,10 @@ class Editor
         this.editor.blur(evt => { this.on_blur(evt) });
         this.td.empty().append(this.editor);
         this.td.data("dballeweb_editor", this.editor);
-        this.editor.focus();
+        // This makes the element disappear on FireFox
+        // this.editor.focus();
+        // This seems to work:
+        setTimeout(() => { this.editor.focus(); }, 0);
     }
 
     // Cancel the editing and restore the TD as it was
