@@ -6,6 +6,8 @@ import webbrowser
 from dballe_web.webserver import Application
 from tornado.options import define, options
 from tornado.platform.asyncio import AsyncIOMainLoop
+import tornado.httpserver
+import tornado.netutil
 import asyncio
 AsyncIOMainLoop().install()
 
@@ -16,18 +18,20 @@ class DballeWeb:
     def __init__(self):
         self.db_url = options.db
         self.web_host = "localhost"
-        self.web_port = None
+        self.web_port = options.web_port
 
     def setup(self):
         # Set up web server on a free port
         self.application = Application(self.db_url)
 
-        import tornado.netutil
-        import tornado.httpserver
-        sockets = tornado.netutil.bind_sockets(0, '127.0.0.1')
-        self.web_port = sockets[0].getsockname()[:2][1]
-        server = tornado.httpserver.HTTPServer(self.application)
-        server.add_sockets(sockets)
+        if self.web_port is None:
+            sockets = tornado.netutil.bind_sockets(0, '127.0.0.1')
+            self.web_port = sockets[0].getsockname()[:2][1]
+            server = tornado.httpserver.HTTPServer(self.application)
+            server.add_sockets(sockets)
+        else:
+            server = tornado.httpserver.HTTPServer(self.application)
+            server.listen(self.web_port)
 
     @asyncio.coroutine
     def async_setup(self):
@@ -36,7 +40,7 @@ class DballeWeb:
 
 def main():
     # define("web_host", default="127.0.0.1", help="listening hostname for web interface")
-    # define("web_port", type=int, default=8000, help="listening port for web interface")
+    define("web_port", type=int, default=None, help="listening port for web interface")
     define("db", type=str, metavar="dballe_url", default=os.environ.get("DBA_DB"),
            help="DB-All.e database to connect to")
     options.parse_command_line()
