@@ -29,8 +29,8 @@ class DballeWeb:
 
 
 def main():
-    define("web_host", default="127.0.0.1", help="listening hostname for web interface")
-    define("web_port", type=int, default=8000, help="listening port for web interface")
+    # define("web_host", default="127.0.0.1", help="listening hostname for web interface")
+    # define("web_port", type=int, default=8000, help="listening port for web interface")
     define("db", type=str, metavar="dballe_url", default=os.environ.get("DBA_DB"),
            help="DB-All.e database to connect to")
     options.parse_command_line()

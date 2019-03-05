@@ -49,12 +49,13 @@ class RestPOST(tornado.web.RequestHandler):
         self.function = function
         self.kwargs = kwargs
 
-    async def post(self, **kwargs):
+    @asyncio.coroutine
+    def post(self, **kwargs):
         args = json.loads(self.request.body.decode("utf8"))
         args.update(kwargs)
         args.update(self.kwargs)
         try:
-            self.write(await self.application.webapi(self.function, **args))
+            self.write((yield from self.application.webapi(self.function, **args)))
         except WebAPIError as e:
             self.set_status(e.code, str(e))
             self.write({
@@ -92,7 +93,8 @@ class Export(tornado.web.RequestHandler):
     """
     Download data selected in the current section
     """
-    async def get(self, format, **kwargs):
+    @asyncio.coroutine
+    def get(self, format, **kwargs):
         fname = datetime.datetime.now().strftime("%Y%m%d-%H%M")
         self.set_header("Content-Disposition", 'attachment; filename="{}.{}"'.format(fname, format))
         if format == "csv":
@@ -100,7 +102,7 @@ class Export(tornado.web.RequestHandler):
         else:
             self.set_header("Content-Type", "application/octet-stream")
         writer = WriteToHandler(self)
-        await self.application.session.export(format, writer)
+        yield from self.application.session.export(format, writer)
 
 
 class Application(tornado.web.Application):
@@ -114,15 +116,24 @@ class Application(tornado.web.Application):
             url(r"/api/1.0/async_ping", RestGET, kwargs={"function": "async_ping"}, name="api1.0_async_ping"),
             url(r"/api/1.0/init", RestGET, kwargs={"function": "init"}, name="api1.0_init"),
             url(r"/api/1.0/get_data", RestGET, kwargs={"function": "get_data"}, name="api1.0_get_data"),
-            url(r"/api/1.0/get_station_data", RestGET, kwargs={"function": "get_station_data"}, name="api1.0_get_station_data"),
-            url(r"/api/1.0/get_station_data_attrs", RestGET, kwargs={"function": "get_station_data_attrs"}, name="api1.0_get_station_data_attrs"),
-            url(r"/api/1.0/get_data_attrs", RestGET, kwargs={"function": "get_data_attrs"}, name="api1.0_get_data_attrs"),
-            url(r"/api/1.0/set_filter", RestPOST, kwargs={"function": "set_filter"}, name="api1.0_set_filter"),
-            url(r"/api/1.0/replace_station_data", RestPOST, kwargs={"function": "replace_station_data"}, name="api1.0_replace_station_data"),
-            url(r"/api/1.0/replace_data", RestPOST, kwargs={"function": "replace_data"}, name="api1.0_replace_data"),
-            url(r"/api/1.0/replace_station_data_attr", RestPOST, kwargs={"function": "replace_station_data_attr"}, name="api1.0_replace_station_data_attr"),
-            url(r"/api/1.0/replace_data_attr", RestPOST, kwargs={"function": "replace_data_attr"}, name="api1.0_replace_data_attr"),
-            url(r"/api/1.0/set_data_limit", RestPOST, kwargs={"function": "set_data_limit"}, name="api1.0_set_data_limit"),
+            url(r"/api/1.0/get_station_data", RestGET,
+                kwargs={"function": "get_station_data"}, name="api1.0_get_station_data"),
+            url(r"/api/1.0/get_station_data_attrs", RestGET,
+                kwargs={"function": "get_station_data_attrs"}, name="api1.0_get_station_data_attrs"),
+            url(r"/api/1.0/get_data_attrs", RestGET,
+                kwargs={"function": "get_data_attrs"}, name="api1.0_get_data_attrs"),
+            url(r"/api/1.0/set_filter", RestPOST,
+                kwargs={"function": "set_filter"}, name="api1.0_set_filter"),
+            url(r"/api/1.0/replace_station_data", RestPOST, kwargs={"function": "replace_station_data"},
+                name="api1.0_replace_station_data"),
+            url(r"/api/1.0/replace_data", RestPOST,
+                kwargs={"function": "replace_data"}, name="api1.0_replace_data"),
+            url(r"/api/1.0/replace_station_data_attr", RestPOST,
+                kwargs={"function": "replace_station_data_attr"}, name="api1.0_replace_station_data_attr"),
+            url(r"/api/1.0/replace_data_attr", RestPOST,
+                kwargs={"function": "replace_data_attr"}, name="api1.0_replace_data_attr"),
+            url(r"/api/1.0/set_data_limit", RestPOST,
+                kwargs={"function": "set_data_limit"}, name="api1.0_set_data_limit"),
             url(r"/api/1.0/export/(?P<format>\w+)", Export, name="export"),
         ]
 
@@ -138,5 +149,6 @@ class Application(tornado.web.Application):
 
         super().__init__(urls, **settings)
 
-    async def async_setup(self):
-        await self.session.init()
+    @asyncio.coroutine
+    def async_setup(self):
+        yield from self.session.init()

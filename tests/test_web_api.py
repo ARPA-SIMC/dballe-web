@@ -16,32 +16,32 @@ class TestWebAPIMixin:
 
 class TestPing(TestWebAPIMixin, AsyncTestCase):
     @async_test
-    async def test_ping(self):
+    def test_ping(self):
         with mock.patch("time.time", return_value=100):
-            res = await self.api("ping")
+            res = yield from self.api("ping")
             self.assertEqual(res, {"time": 100, "initializing": True, "pong": True})
 
     @async_test
-    async def test_async_ping(self):
+    def test_async_ping(self):
         with mock.patch("time.time", return_value=100):
-            res = await self.api("ping")
+            res = yield from self.api("ping")
             self.assertEqual(res, {"time": 100, "initializing": True, "pong": True})
 
 
 class TestEmpty(TestWebAPIMixin, AsyncTestCase):
     @async_test
-    async def test_get_data(self):
-        await self.session.refresh_filter()
+    def test_get_data(self):
+        yield from self.session.refresh_filter()
         with mock.patch("time.time", return_value=100):
-            res = await self.api("get_data")
+            res = yield from self.api("get_data")
             self.assertEqual(res, {"time": 100, "rows": []})
 
 
 class TestInit(TestWebAPIMixin, AsyncTestCase):
     @async_test
-    async def test_not_initialized(self):
+    def test_not_initialized(self):
         with mock.patch("time.time", return_value=150):
-            res = await(self.api("init"))
+            res = yield from self.api("init")
             self.assertEqual(res, {
                 "time": 150,
                 'explorer': {
@@ -102,9 +102,9 @@ class TestBasic(TestWebAPIMixin, AsyncTestCase):
             t.insert_data(self.data, False, True)
 
     @async_test
-    async def test_init(self):
+    def test_init(self):
         with mock.patch("time.time", return_value=100):
-            res = await self.api("init")
+            res = yield from self.api("init")
             self.maxDiff = None
             self.assertEqual(res, {
                 "time": 100,
@@ -143,10 +143,10 @@ class TestBasic(TestWebAPIMixin, AsyncTestCase):
             })
 
     @async_test
-    async def test_get_data(self):
-        await self.session.refresh_filter()
+    def test_get_data(self):
+        yield from self.session.refresh_filter()
         with mock.patch("time.time", return_value=100):
-            res = await self.api("get_data")
+            res = yield from self.api("get_data")
             self.maxDiff = None
             self.assertEqual(res, {
                 "time": 100,
