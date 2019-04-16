@@ -4,14 +4,16 @@
 Summary: Graphical interface to DB-All.e databases
 Name: dballe-web
 Version: 0.2
-Release: 1
+Release: 2
 License: GPL
 Group: Applications/Meteo
 Source0: https://github.com/arpa-simc/%{name}/archive/v%{version}-%{release}.tar.gz#/%{srcarchivename}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
 %if 0%{?rhel} == 7
-%define python3_vers python34
+%define python3_vers python36
+# to have python 3.6 interpreter
+BuildRequires: python3-rpm-macros >= 3-23
 %else
 %define python3_vers python3
 %endif
@@ -66,6 +68,9 @@ Requires: %{python3_vers}-numpy
 %postun
 
 %changelog
+* Tue Apr 16 2019 Daniele Branchini <dbranchini@arpae.it> - 0.2-2
+- Moving to python 3.6 on CentOS7
+
 * Tue Mar  5 2019 Daniele Branchini <dbranchini@arpae.it> - 0.2-1
 - Fixed build on CentOS7 (#4)
 - Fixed tests (#6)
