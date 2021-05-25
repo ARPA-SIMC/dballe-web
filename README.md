@@ -1,13 +1,11 @@
-[![Build Status](https://badges.herokuapp.com/travis/ARPA-SIMC/dballe-web?branch=master&env=DOCKER_IMAGE=centos:7&label=centos7)](https://travis-ci.org/ARPA-SIMC/dballe-web)
-[![Build Status](https://badges.herokuapp.com/travis/ARPA-SIMC/dballe-web?branch=master&env=DOCKER_IMAGE=centos:8&label=centos8)](https://travis-ci.org/ARPA-SIMC/dballe-web)
-[![Build Status](https://badges.herokuapp.com/travis/ARPA-SIMC/dballe-web?branch=master&env=DOCKER_IMAGE=fedora:32&label=fedora32)](https://travis-ci.org/ARPA-SIMC/dballe-web)
-[![Build Status](https://badges.herokuapp.com/travis/ARPA-SIMC/dballe-web?branch=master&env=DOCKER_IMAGE=fedora:33&label=fedora33)](https://travis-ci.org/ARPA-SIMC/dballe-web)
-[![Build Status](https://badges.herokuapp.com/travis/ARPA-SIMC/dballe-web?branch=master&env=DOCKER_IMAGE=fedora:rawhide&label=fedorarawhide)](https://travis-ci.org/ARPA-SIMC/dballe-web)
+[![Build Status](https://simc.arpae.it/moncic-ci/dballe-web/centos7.png)](https://simc.arpae.it/moncic-ci/dballe-web/)
+[![Build Status](https://simc.arpae.it/moncic-ci/dballe-web/centos8.png)](https://simc.arpae.it/moncic-ci/dballe-web/)
+[![Build Status](https://simc.arpae.it/moncic-ci/dballe-web/fedora32.png)](https://simc.arpae.it/moncic-ci/dballe-web/)
+[![Build Status](https://simc.arpae.it/moncic-ci/dballe-web/fedora34.png)](https://simc.arpae.it/moncic-ci/dballe-web/)
 [![Build Status](https://copr.fedorainfracloud.org/coprs/simc/stable/package/dballe-web/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/simc/stable/package/dballe-web/)
 
 DB-All.e-web
 ===============================================================
-
 
 
 Introduction
@@ -74,6 +72,6 @@ Contact and copyright information
 
 The author of DB-ALLe is Enrico Zini <enrico@enricozini.com>
 
-DB-All.e-web is Copyright (C) 2015-2020 ARPAE-SIMC <urpsim@arpae.it>
+DB-All.e-web is Copyright (C) 2015-2021 ARPAE-SIMC <urpsim@arpae.it>
 
 DB-All.e-web is licensed under the terms of the GNU General Public License version 2.0
