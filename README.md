@@ -65,7 +65,7 @@ Example `dballe_url` values:
  - `postgresql://user@host/db`
  - `mysql://[host][:port]/[database][?propertyName1][=propertyValue1]`…
  
-See https://arpa-simc.github.io/dballe/parms.html
+See https://arpa-simc.github.io/dballe/general_ref/connect.html#url-syntax
 
 Contact and copyright information
 ---------------------------------
