@@ -45,7 +45,7 @@ input.data_editor {
   function main()
   {
     dballeweb = new window.dballeweb.DballeWeb({
-      resource_url: "{{ static_url('dballe-web/') }}",
+      resource_url: "{{ static_url('dballe-web/', include_version=False) }}",
     });
 
     $("#jumbotron-goto-filter").click(evt => {
