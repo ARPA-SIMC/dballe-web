@@ -54,12 +54,6 @@ class WebAPI:
         }
 
     @asyncio.coroutine
-    def do_init(self, **kw):
-        return {
-            "explorer": (yield from self.session.init()),
-        }
-
-    @asyncio.coroutine
     def do_get_data(self, **kw):
         return {
             "rows": (yield from self.session.get_data()),
