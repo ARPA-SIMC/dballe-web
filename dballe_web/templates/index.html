@@ -45,7 +45,7 @@ input.data_editor {
   function main()
   {
     dballeweb = new window.dballeweb.DballeWeb({
-      resource_url: "{{ static_url('dballe-web/', include_version=False) }}",
+      resource_url: "{{ url_for('static', filename='dballe-web/') }}",
     });
 
     $("#jumbotron-goto-filter").click(evt => {
@@ -65,7 +65,7 @@ input.data_editor {
   });
 })(jQuery);
 </script>
-{% end %}
+{% endblock %}
 
 {% block body %}
 <div class="card">
@@ -136,4 +136,4 @@ input.data_editor {
     </div>
   </div>
 </div>
-{% end %}
+{% endblock %}

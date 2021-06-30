@@ -14,11 +14,6 @@ import logging
 log = logging.getLogger(__name__)
 
 
-class HomeHandler(tornado.web.RequestHandler):
-    def get(self):
-        self.render("index.html")
-
-
 class RestGET(tornado.web.RequestHandler):
     """
     WebAPI front-end for GET requests
@@ -92,29 +87,12 @@ class WriteToHandler:
         self.loop.call_soon_threadsafe(do_flush)
 
 
-class Export(tornado.web.RequestHandler):
-    """
-    Download data selected in the current section
-    """
-    @gen.coroutine
-    def get(self, format, **kwargs):
-        fname = datetime.datetime.now().strftime("%Y%m%d-%H%M")
-        self.set_header("Content-Disposition", 'attachment; filename="{}.{}"'.format(fname, format))
-        if format == "csv":
-            self.set_header("Content-Type", "text/csv")
-        else:
-            self.set_header("Content-Type", "application/octet-stream")
-        writer = WriteToHandler(self)
-        yield to_tornado_future(asyncio.ensure_future(self.application.session.export(format, writer)))
-
-
 class Application(tornado.web.Application):
     def __init__(self, db_url, **settings):
         self.loop = asyncio.get_event_loop()
         self.session = Session(db_url)
 
         urls = [
-            url(r"/", HomeHandler, name="home"),
             url(r"/api/1.0/ping", RestGET, kwargs={"function": "ping"}, name="api1.0_ping"),
             url(r"/api/1.0/async_ping", RestGET, kwargs={"function": "async_ping"}, name="api1.0_async_ping"),
             url(r"/api/1.0/init", RestGET, kwargs={"function": "init"}, name="api1.0_init"),
@@ -137,7 +115,6 @@ class Application(tornado.web.Application):
                 kwargs={"function": "replace_data_attr"}, name="api1.0_replace_data_attr"),
             url(r"/api/1.0/set_data_limit", RestPOST,
                 kwargs={"function": "set_data_limit"}, name="api1.0_set_data_limit"),
-            url(r"/api/1.0/export/(?P<format>\w+)", Export, name="export"),
         ]
 
         self.webapi = WebAPI(self.session)

@@ -5,32 +5,32 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-    <title>{% block title %}DB-All.e Web{% end %}</title>
+    <title>{% block title %}DB-All.e Web{% endblock %}</title>
 
     <!-- Bootstrap -->
-    <link href="{{ static_url('bootstrap-4.1.0/css/bootstrap.min.css') }}" rel="stylesheet">
-    <script src="{{ static_url('jquery-3.3.1/jquery-3.3.1.min.js') }}"></script>
-    <script src="{{ static_url('popper-1.14.3/popper.min.js') }}"></script>
-    <script src="{{ static_url('bootstrap-4.1.0/js/bootstrap.min.js') }}"></script>
+    <link href="{{ url_for('static', filename='bootstrap-4.1.0/css/bootstrap.min.css') }}" rel="stylesheet">
+    <script src="{{ url_for('static', filename='jquery-3.3.1/jquery-3.3.1.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='popper-1.14.3/popper.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='bootstrap-4.1.0/js/bootstrap.min.js') }}"></script>
 
     <!-- Open Iconic -->
-    <link href="{{ static_url('open-iconic/css/open-iconic-bootstrap.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='open-iconic/css/open-iconic-bootstrap.css') }}" rel="stylesheet">
 
     <!-- Leaflet -->
-    <script src="{{ static_url('leaflet-1.2.0/leaflet.js') }}"></script>
-    <link href="{{ static_url('leaflet-1.2.0/leaflet.css') }}" rel="stylesheet">
-    <link href="{{ static_url('Leaflet.markercluster-1.2.0/MarkerCluster.Default.css') }}" rel="stylesheet">
-    <link href="{{ static_url('Leaflet.markercluster-1.2.0/MarkerCluster.css') }}" rel="stylesheet">
-    <script src="{{ static_url('Leaflet.markercluster-1.2.0/leaflet.markercluster.js') }}"></script>
-    <link href="{{ static_url('Leaflet.MousePosition/L.Control.MousePosition.css') }}" rel="stylesheet">
-    <script src="{{ static_url('Leaflet.MousePosition/L.Control.MousePosition.js') }}"></script>
+    <script src="{{ url_for('static', filename='leaflet-1.2.0/leaflet.js') }}"></script>
+    <link href="{{ url_for('static', filename='leaflet-1.2.0/leaflet.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='Leaflet.markercluster-1.2.0/MarkerCluster.Default.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='Leaflet.markercluster-1.2.0/MarkerCluster.css') }}" rel="stylesheet">
+    <script src="{{ url_for('static', filename='Leaflet.markercluster-1.2.0/leaflet.markercluster.js') }}"></script>
+    <link href="{{ url_for('static', filename='Leaflet.MousePosition/L.Control.MousePosition.css') }}" rel="stylesheet">
+    <script src="{{ url_for('static', filename='Leaflet.MousePosition/L.Control.MousePosition.js') }}"></script>
 
     <!-- DB-All.e Web -->
-    <script src="{{ static_url('dballe-web/fields.js') }}"></script>
-    <script src="{{ static_url('dballe-web/map.js') }}"></script>
-    <script src="{{ static_url('dballe-web/data.js') }}"></script>
-    <script src="{{ static_url('dballe-web/dballe-web.js') }}"></script>
-    <script src="{{ static_url('dballe-web/leaflet.boxselect.js') }}"></script>
+    <script src="{{ url_for('static', filename='dballe-web/fields.js') }}"></script>
+    <script src="{{ url_for('static', filename='dballe-web/map.js') }}"></script>
+    <script src="{{ url_for('static', filename='dballe-web/data.js') }}"></script>
+    <script src="{{ url_for('static', filename='dballe-web/dballe-web.js') }}"></script>
+    <script src="{{ url_for('static', filename='dballe-web/leaflet.boxselect.js') }}"></script>
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -48,10 +48,10 @@
     </script>
 
     {% block head %}
-    {% end %}
+    {% endblock %}
   </head>
   <body>
     {% block body %}
-    {% end %}
+    {% endblock %}
   </body>
 </html>
