@@ -1,17 +1,11 @@
 #!/usr/bin/env python3
 import argparse
 import logging
-# import os
+import os
 # import os.path
 import sys
 # import webbrowser
-# from dballe_web.webserver import Application
-# from tornado.options import define, options
-# from tornado.platform.asyncio import AsyncIOMainLoop
-# import tornado.httpserver
-# import tornado.netutil
-# import asyncio
-# AsyncIOMainLoop().install()
+from dballe_web.session import Session
 
 try:
     import coloredlogs
@@ -29,16 +23,37 @@ VERSION = "0.2"
 log = logging.getLogger("dballe-web")
 
 
-def start_gevent(args):
+class DballeWebMiddleware:
+    """
+    Add dballe-web database and command line arguments to the WSGI environment
+    """
+    def __init__(self, args, db_session: Session, wsgi_app):
+        self.args = args
+        self.db_session = db_session
+        self.wsgi_app = wsgi_app
+
+    def __call__(self, environ, start_response, *args):
+        environ["dballeweb.args"] = self.args
+        environ["dballeweb.db_session"] = self.db_session
+        return self.wsgi_app(environ, start_response, *args)
+
+
+def make_app(args):
     from dballe_web.application import app
+    db_session = Session(args.db)
+    return DballeWebMiddleware(args, db_session, app)
+
+
+def start_gevent(args):
     from gevent.pywsgi import WSGIServer
+    app = make_app(args)
     log.info("Starting server on 127.0.0.1:%d", args.port)
     http_server = WSGIServer(('127.0.0.1', args.port), app)
     http_server.serve_forever()
 
 
 def start_flask(args):
-    from dballe_web.application import app
+    app = make_app()
     log.info("Starting server on 127.0.0.1:%d", args.port)
     app.run(host="127.0.0.1", port=args.port)
 
@@ -61,10 +76,6 @@ def start_flask(args):
 #         else:
 #             server = tornado.httpserver.HTTPServer(self.application)
 #             server.listen(self.web_port)
-#
-#     @asyncio.coroutine
-#     def async_setup(self):
-#         yield from self.application.async_setup()
 
 
 def main():
@@ -76,6 +87,8 @@ def main():
                         help="verbose output")
     parser.add_argument("--port", "--web-port", type=int, default=5000,
                         help="listening port for web interface")
+    parser.add_argument("db", type=str, metavar="dballe_url", default=os.environ.get("DBA_DB"),
+                        help="DB-All.e database to connect to")
     args = parser.parse_args()
 
     if args.debug:
@@ -92,26 +105,11 @@ def main():
     else:
         logging.basicConfig(level=log_level, stream=sys.stderr, format=FORMAT)
 
-    # # define("web_host", default="127.0.0.1", help="listening hostname for web interface")
-    # define("db", type=str, metavar="dballe_url", default=os.environ.get("DBA_DB"),
-    #        help="DB-All.e database to connect to")
-    # options.parse_command_line()
-
-    # if not options.db:
-    #     print("Please provide a database URL with --db", file=sys.stderr)
-    #     options.print_help()
-    #     return 1
-
     # app = DballeWeb()
     # app.setup()
-    # url = "http://{}:{}/".format(app.web_host, app.web_port)
+    # url = "http://127.0.0.1:{}/".format(app.port)
     # print("dballe-web URL:", url)
     # webbrowser.open(url)
-
-    # def _on_init():
-    #     asyncio.get_event_loop().create_task(app.async_setup())
-    # asyncio.get_event_loop().call_soon(_on_init)
-    # asyncio.get_event_loop().run_forever()
 
     if gevent is None:
         start_flask(args)
