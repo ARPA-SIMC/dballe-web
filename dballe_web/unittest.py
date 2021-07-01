@@ -1,13 +1,16 @@
-from .webserver import make_app
+from .application import create_app
 
 
 class DballeWebMixin:
-    def make_app(self):
-        return make_app("sqlite://:memory:")
+    def create_app(self):
+        app = create_app("sqlite://:memory:")
+        app.db.reset()
+        app.config["SERVER_NAME"] = "localhost"
+        return app
 
     def setUp(self):
         super().setUp()
-        self.app = self.make_app()
+        self.app = self.create_app()
 
     def tearDown(self):
         self.app = None
