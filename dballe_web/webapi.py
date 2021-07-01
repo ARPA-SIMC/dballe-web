@@ -1,118 +1,171 @@
+from typing import Dict, Any
 import time
-import logging
-import asyncio
+from flask import Blueprint, jsonify, make_response, request, current_app
+from flask.views import MethodView
 
-log = logging.getLogger(__name__)
-
-
-class WebAPIError(Exception):
-    def __init__(self, code, msg):
-        super().__init__(msg)
-        self.code = code
+api = Blueprint('api10', __name__, url_prefix='/api/1.0/')
 
 
-class WebAPI:
+@api.route(r"/export/<format>")
+def export(format):
     """
-    Backend-independent functions exposed via REST or WebSocket APIs
+    Download data selected in the current section
     """
-    def __init__(self, session):
-        self.session = session
-        self.loop = asyncio.get_event_loop()
+    ...  # TODO: flask has a send_file
+    # fname = datetime.datetime.now().strftime("%Y%m%d-%H%M")
+    # self.set_header("Content-Disposition", 'attachment; filename="{}.{}"'.format(fname, format))
+    # if format == "csv":
+    #     self.set_header("Content-Type", "text/csv")
+    # else:
+    #     self.set_header("Content-Type", "application/octet-stream")
+    # writer = WriteToHandler(self)
+    # yield to_tornado_future(asyncio.ensure_future(self.application.session.export(format, writer)))
 
-    @asyncio.coroutine
-    def __call__(self, function=None, **kw):
-        """
-        Call a web API function by name and keyword arguments
-        """
-        log.debug("API call %s %r", function, kw)
-        if function is None:
-            log.debug("API call %s %s: function is missing", function, kw)
-            return None
-        f = getattr(self, "do_" + function)
-        if f is None:
-            log.debug("API call %s %s: function not found", function, kw)
-            return None
-        if asyncio.iscoroutinefunction(f):
-            res = yield from f(**kw)
-        else:
-            res = f(**kw)
-        log.debug("API call %s %r result %r", function, kw, res)
-        if not self.session.initialized:
-            res["initializing"] = True
-        res["time"] = time.time()
-        return res
 
-    def do_ping(self, **kw):
+class APIView(MethodView):
+    """
+    Base code for all Web API views
+    """
+    def call_api(self, kwargs: Dict[str, Any]):
+        try:
+            result = self.api(**kwargs)
+            current_app.logger.debug("API call %s %r result %r", self.__class__.__name__, kwargs, result)
+            if not self.db_session.initialized:
+                result["initializing"] = True
+            result["time"] = time.time()
+            return jsonify(result)
+        except Exception as e:
+            current_app.logger.error("API call error %s", e, exc_info=True)
+            code = 500
+            return make_response(jsonify({
+                "error": True,
+                "code": code,
+                "message": str(e)
+            }), code)
+
+    @property
+    def db_session(self):
+        return current_app.db_session
+
+    @classmethod
+    def register(cls, name: str):
+        api.add_url_rule(f"/{name}", view_func=cls.as_view(f"{name}"))
+
+
+def register(name: str):
+    def _register(cls):
+        cls.register(name)
+        return cls
+    return _register
+
+
+class APIViewGET(APIView):
+    """
+    Base code for all Web API GET views
+    """
+    def get(self, **kwargs):
+        current_app.logger.debug("API GET call %s %r", self.__class__.__name__, kwargs)
+        kwargs.update(request.args.items())
+        return self.call_api(kwargs)
+
+
+class APIViewPOST(APIView):
+    """
+    Base code for all Web API POST views
+    """
+    def post(self, **kwargs):
+        current_app.logger.debug("API POST call %s %r", self.__class__.__name__, kwargs)
+        kwargs.update(request.json.items())
+        return self.call_api(kwargs)
+
+
+@register("init")
+class APIInit(APIViewGET):
+    def api(self):
         return {
-            "pong": True,
+            "explorer": self.db_session.init(),
         }
 
-    @asyncio.coroutine
-    def do_async_ping(self, **kw):
+
+@register("get_data")
+class APIGetData(APIViewGET):
+    def api(self):
         return {
-            "pong": True,
+            "rows": self.db_session.get_data(),
         }
 
-    @asyncio.coroutine
-    def do_get_data(self, **kw):
-        return {
-            "rows": (yield from self.session.get_data()),
-        }
 
-    @asyncio.coroutine
-    def do_get_station_data(self, id_station, **kw):
-        station, rows = (yield from self.session.get_station_data(int(id_station)))
+@register("get_station_data")
+class APIGetStationData(APIViewGET):
+    def api(self, id_station):
+        station, rows = self.db_session.get_station_data(int(id_station))
         return {
             "station": station,
             "rows": rows,
         }
 
-    @asyncio.coroutine
-    def do_get_station_data_attrs(self, id, **kw):
+
+@register("get_station_data_attrs")
+class APIGetStationDataAttrs(APIViewGET):
+    def api(self, id):
         return {
-            "rows": (yield from self.session.get_station_data_attrs(int(id))),
+            "rows": self.db_session.get_station_data_attrs(int(id)),
         }
 
-    @asyncio.coroutine
-    def do_get_data_attrs(self, id, **kw):
+
+@register("get_data_attrs")
+class APIGetDataAttrs(APIViewGET):
+    def api(self, id):
         return {
-            "rows": (yield from self.session.get_data_attrs(int(id))),
+            "rows": self.db_session.get_data_attrs(int(id)),
         }
 
-    @asyncio.coroutine
-    def do_set_filter(self, filter, **kw):
+
+@register("set_filter")
+class APISetFilter(APIViewPOST):
+    def api(self, filter):
         return {
-            "explorer": (yield from self.session.set_filter(filter)),
+            "explorer": self.db_session.set_filter(filter),
         }
 
-    @asyncio.coroutine
-    def do_replace_station_data(self, rec, **kw):
-        station, rows = (yield from self.session.replace_station_data(rec))
+
+@register("replace_station_data")
+class ApiReplaceStationData(APIViewPOST):
+    def api(self, rec):
+        station, rows = self.db_session.replace_station_data(rec)
         return {
             "station": station,
             "rows": rows,
         }
 
-    @asyncio.coroutine
-    def do_replace_data(self, rec, **kw):
+
+@register("replace_data")
+class ApiReplaceData(APIViewPOST):
+    def api(self, rec):
         return {
-            "rows": (yield from self.session.replace_data(rec)),
+            "rows": self.db_session.replace_data(rec),
         }
 
-    @asyncio.coroutine
-    def do_replace_station_data_attr(self, var_data, rec, **kw):
+
+@register("replace_station_data_attr")
+class APIReplaceStationDataAttr(APIViewPOST):
+    def api(self, var_data, rec):
         return {
-            "rows": (yield from self.session.replace_station_data_attr(var_data, rec)),
+            "rows": self.db_session.replace_station_data_attr(var_data, rec),
         }
 
-    @asyncio.coroutine
-    def do_replace_data_attr(self, var_data, rec, **kw):
+
+@register("replace_data_attr")
+class APIReplaceDataAttr(APIViewPOST):
+    def api(self, var_data, rec):
         return {
-            "rows": (yield from self.session.replace_data_attr(var_data, rec)),
+            "rows": self.db_session.replace_data_attr(var_data, rec),
         }
 
-    @asyncio.coroutine
-    def do_set_data_limit(self, limit, **kw):
+
+@register("set_data_limit")
+class APISetDataLimit(APIViewPOST):
+    def api(self, limit):
         return {
-            "rows": (yield from self.session.set_data_limit(limit)),
+            "rows": self.db_session.set_data_limit(limit),
         }

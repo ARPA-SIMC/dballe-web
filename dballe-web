@@ -5,7 +5,7 @@ import os
 # import os.path
 import sys
 # import webbrowser
-from dballe_web.session import Session
+from dballe_web.application import create_app
 
 try:
     import coloredlogs
@@ -23,59 +23,18 @@ VERSION = "0.2"
 log = logging.getLogger("dballe-web")
 
 
-class DballeWebMiddleware:
-    """
-    Add dballe-web database and command line arguments to the WSGI environment
-    """
-    def __init__(self, args, db_session: Session, wsgi_app):
-        self.args = args
-        self.db_session = db_session
-        self.wsgi_app = wsgi_app
-
-    def __call__(self, environ, start_response, *args):
-        environ["dballeweb.args"] = self.args
-        environ["dballeweb.db_session"] = self.db_session
-        return self.wsgi_app(environ, start_response, *args)
-
-
-def make_app(args):
-    from dballe_web.application import app
-    db_session = Session(args.db)
-    return DballeWebMiddleware(args, db_session, app)
-
-
 def start_gevent(args):
     from gevent.pywsgi import WSGIServer
-    app = make_app(args)
+    app = create_app(args.db)
     log.info("Starting server on 127.0.0.1:%d", args.port)
     http_server = WSGIServer(('127.0.0.1', args.port), app)
     http_server.serve_forever()
 
 
 def start_flask(args):
-    app = make_app()
+    app = create_app(args.db)
     log.info("Starting server on 127.0.0.1:%d", args.port)
     app.run(host="127.0.0.1", port=args.port)
-
-
-# class DballeWeb:
-#     def __init__(self):
-#         self.db_url = options.db
-#         self.web_host = "localhost"
-#         self.web_port = options.web_port
-#
-#     def setup(self):
-#         # Set up web server on a free port
-#         self.application = Application(self.db_url)
-#
-#         if self.web_port is None:
-#             sockets = tornado.netutil.bind_sockets(0, '127.0.0.1')
-#             self.web_port = sockets[0].getsockname()[:2][1]
-#             server = tornado.httpserver.HTTPServer(self.application)
-#             server.add_sockets(sockets)
-#         else:
-#             server = tornado.httpserver.HTTPServer(self.application)
-#             server.listen(self.web_port)
 
 
 def main():
