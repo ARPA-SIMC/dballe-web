@@ -141,7 +141,10 @@ class TestBasic(WebAPIMixin, TestCase):
                 'level': [[[10, 11, 15, 22], 'Layer from [10 11] to [15 22]']],
                 'trange': [[[20, 111, 222], '20 111 222']],
                 'rep_memo': ['synop', 'temp'],
-                'var': ['B01011', 'B01012'],
+                'var': [
+                    ['B01011', 'B01011: SHIP OR MOBILE LAND STATION IDENTIFIER'],
+                    ['B01012', 'B01012: DIRECTION OF MOTION OF MOVING OBSERVING PLATFORM**'],
+                ],
                 'stats': {
                     'count': 4,
                     'datetime_min': '1945-04-25 08:00:00',
