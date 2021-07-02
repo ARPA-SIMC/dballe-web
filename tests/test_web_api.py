@@ -12,6 +12,13 @@ class WebAPIMixin(DballeWebMixin):
             with self.app.test_client() as client:
                 yield client
 
+    def api_export(self, fmt: str, time: int = 100, **kwargs):
+        with self.app.app_context():
+            url = url_for(f"api10.export", format=fmt)
+
+        with self.test_client(time=time) as client:
+            return client.get(url, data=kwargs)
+
     def api_get(self, name: str, time: int = 100, **kwargs):
         with self.app.app_context():
             url = url_for(f"api10.{name}")
@@ -27,25 +34,18 @@ class WebAPIMixin(DballeWebMixin):
             return client.get(url, json=kwargs)
 
 
-# class TestPing(TestWebAPIMixin, TestCase):
-#     @async_test
-#     def test_ping(self):
-#         with mock.patch("time.time", return_value=100):
-#             res = yield from self.api("ping")
-#             self.assertEqual(res, {"time": 100, "initializing": True, "pong": True})
-#
-#     @async_test
-#     def test_async_ping(self):
-#         with mock.patch("time.time", return_value=100):
-#             res = yield from self.api("ping")
-#             self.assertEqual(res, {"time": 100, "initializing": True, "pong": True})
-
-
 class TestEmpty(WebAPIMixin, TestCase):
     def test_get_data(self):
         self.app.db_session.init()
         res = self.api_get("get_data")
         self.assertEqual(res.get_json(), {"time": 100, "rows": []})
+
+    def test_export(self):
+        self.app.db_session.init()
+        res = self.api_export("bufr")
+        self.assertEqual(res.get_data(), b"")
+        res = self.api_export("csv")
+        self.assertEqual(res.get_data(), b"")
 
 
 class TestInit(WebAPIMixin, TestCase):
@@ -203,3 +203,16 @@ class TestBasic(WebAPIMixin, TestCase):
                 "vs": 0,
             }],
         })
+
+    def test_export(self):
+        self.app.db_session.init()
+
+        res = self.api_export("bufr")
+        self.assertEqual(res.headers["Content-Type"], "application/octet-stream")
+        self.assertRegex(res.headers["Content-Disposition"], r'attachment; filename="\d{8}-\d{4}.bufr"')
+        self.assertEqual(res.get_data(), b"")
+
+        res = self.api_export("csv")
+        self.assertEqual(res.headers["Content-Type"], "text/csv; charset=utf-8")
+        self.assertRegex(res.headers["Content-Disposition"], r'attachment; filename="\d{8}-\d{4}.csv"')
+        self.assertEqual(res.get_data(), b"")

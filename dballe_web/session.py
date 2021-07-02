@@ -171,10 +171,6 @@ class Session:
     def export(self, format, out):
         """
         Export the currently selected data to out.
-
-        Note: for BUFR and CREX, export is run in an executor, so data being
-        processed needs to make sure it handles being generated/handled on a
-        different thread
         """
         if format in ("bufr", "crex"):
             with self.db.transaction() as tr:

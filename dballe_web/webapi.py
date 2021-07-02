@@ -1,9 +1,51 @@
 from typing import Dict, Any
+import threading
+import datetime
+import queue
 import time
-from flask import Blueprint, jsonify, make_response, request, current_app
+from flask import Blueprint, jsonify, make_response, request, current_app, Response
 from flask.views import MethodView
 
 api = Blueprint('api10', __name__, url_prefix='/api/1.0/')
+
+
+class Exporter:
+    """
+    Turn a function writing to files to a generator as expected by Flask
+    """
+    def __init__(self, fmt: str):
+        self.format = fmt
+        self.db_session = current_app.db_session
+        self.write_queue = queue.Queue(maxsize=64)
+        self.thread = threading.Thread(target=self.write_loop)
+        self.thread.start()
+
+    def write_loop(self):
+        """
+        Executed in the subthread to export data to the write queue
+        """
+        try:
+            self.db_session.export(format, self)
+        finally:
+            self.write_queue.put(None)
+
+    def write(self, chunk: bytes):
+        """
+        Executed in subthread when it writes to its output file
+        """
+        self.write_queue.put(chunk)
+
+    def generate(self):
+        """
+        Executed in the main thread to generate output in the response
+        """
+        while True:
+            chunk = self.write_queue.get()
+            if chunk is None:
+                self.thread.join()
+                break
+            else:
+                yield chunk
 
 
 @api.route(r"/export/<format>")
@@ -11,15 +53,20 @@ def export(format):
     """
     Download data selected in the current section
     """
-    ...  # TODO: flask has a send_file
-    # fname = datetime.datetime.now().strftime("%Y%m%d-%H%M")
-    # self.set_header("Content-Disposition", 'attachment; filename="{}.{}"'.format(fname, format))
-    # if format == "csv":
-    #     self.set_header("Content-Type", "text/csv")
-    # else:
-    #     self.set_header("Content-Type", "application/octet-stream")
+    fname = datetime.datetime.now().strftime("%Y%m%d-%H%M")
+    if format == "csv":
+        mimetype = "text/csv"
+    else:
+        mimetype = "application/octet-stream"
+
+    exporter = Exporter(format)
+
+    res = Response(exporter.generate(), mimetype=mimetype, headers=[
+        ("Content-Disposition", 'attachment; filename="{}.{}"'.format(fname, format)),
+    ])
     # writer = WriteToHandler(self)
     # yield to_tornado_future(asyncio.ensure_future(self.application.session.export(format, writer)))
+    return res
 
 
 class APIView(MethodView):
