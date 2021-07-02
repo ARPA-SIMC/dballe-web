@@ -25,7 +25,7 @@ class Exporter:
         Executed in the subthread to export data to the write queue
         """
         try:
-            self.db_session.export(format, self)
+            self.db_session.export(self.format, self)
         finally:
             self.write_queue.put(None)
 

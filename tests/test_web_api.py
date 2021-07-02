@@ -205,14 +205,22 @@ class TestBasic(WebAPIMixin, TestCase):
         })
 
     def test_export(self):
+        self.maxDiff = None
         self.app.db_session.init()
 
         res = self.api_export("bufr")
         self.assertEqual(res.headers["Content-Type"], "application/octet-stream")
         self.assertRegex(res.headers["Content-Disposition"], r'attachment; filename="\d{8}-\d{4}.bufr"')
-        self.assertEqual(res.get_data(), b"")
+        self.assertRegex(res.get_data(), br"^BUFR.+7777$")
 
         res = self.api_export("csv")
         self.assertEqual(res.headers["Content-Type"], "text/csv; charset=utf-8")
         self.assertRegex(res.headers["Content-Disposition"], r'attachment; filename="\d{8}-\d{4}.csv"')
-        self.assertEqual(res.get_data(), b"")
+        self.assertEqual(res.get_data().decode().splitlines(), [
+            '"1945-04-25 08:00:00; Level 10,11,15,22; Time range 20,111,222",,,,,',
+            "Station,Latitude,Longitude,Network,Variable,Value",
+            "1,12.34560,76.54320,synop,B01011,Hey Hey!!",
+            "1,12.34560,76.54320,synop,B01012,500",
+            "2,12.34560,76.54320,temp,B01011,Hey Hey!!",
+            "2,12.34560,76.54320,temp,B01012,500",
+        ])
