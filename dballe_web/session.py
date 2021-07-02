@@ -17,6 +17,17 @@ def _import_datetime(val):
     return datetime.datetime.strptime(val, "%Y-%m-%d %H:%M:%S")
 
 
+def describe_var(code: str) -> str:
+    """
+    Return a human-readable description for a varcode
+    """
+    try:
+        info = dballe.varinfo(code)
+        return f"{code}: {info.desc}"
+    except KeyError:
+        return code
+
+
 class Filter:
     def __init__(self):
         self.ana_id = None
@@ -66,7 +77,7 @@ class Filter:
             "rep_memo": self.rep_memo,
             "level": None if self.level is None else [self.level, dballe.describe_level(*self.level)],
             "trange": None if self.trange is None else [self.trange, dballe.describe_trange(*self.trange)],
-            "var": self.var,
+            "var": None if self.var is None else [self.var, describe_var(self.var)],
             "datemin": _export_datetime(self.datemin),
             "datemax": _export_datetime(self.datemax),
             "latmin": self.latmin,
@@ -146,7 +157,7 @@ class Session:
             "rep_memo": self.explorer.reports,
             "level": [(tuple(x), dballe.describe_level(*x)) for x in self.explorer.levels],
             "trange": [(tuple(x), dballe.describe_trange(*x)) for x in self.explorer.tranges],
-            "var": self.explorer.varcodes,
+            "var": [(code, describe_var(code)) for code in self.explorer.varcodes],
             "stats": {
                 "datetime_min": _export_datetime(stats.datetime_min),
                 "datetime_max": _export_datetime(stats.datetime_max),
@@ -182,7 +193,7 @@ class Session:
         log.debug("Session.set_filter")
         self.filter = Filter.from_dict(flt)
         self.explorer.set_filter(self.filter.to_record())
-        self.explorer_to_dict()
+        return self.explorer_to_dict()
 
     def refresh_filter(self):
         log.debug("Session.refresh_filter")
