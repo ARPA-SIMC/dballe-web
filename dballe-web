@@ -33,6 +33,8 @@ log = logging.getLogger("dballe-web")
 
 def start_flask(args):
     from werkzeug import serving
+    import getpass
+    import socket
     app = create_app(args.db)
 
     # If needed, we can pass a socket as 'fd'
@@ -46,6 +48,9 @@ def start_flask(args):
 
     port = server.socket.getsockname()[1]
     log.warning("Running on http://localhost:%d (Press CTRL+C to quit))", port)
+    log.warning("Port forwarding command: ssh %s@%s -NL 5000:localhost:%d",
+                getpass.getuser(), socket.getfqdn(), port)
+    log.warning("Port forwarding URL: http://localhost:5000")
     server.serve_forever()
 
 
