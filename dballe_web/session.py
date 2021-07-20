@@ -58,9 +58,9 @@ class Filter:
         if self.var is not None:
             res["var"] = self.var
         if self.datemin is not None:
-            res["datemin"] = self.datemin
+            res["datetimemin"] = self.datemin
         if self.datemax is not None:
-            res["datemax"] = self.datemax
+            res["datetimemax"] = self.datemax
         if self.latmin is not None:
             res["latmin"] = float(self.latmin)
         if self.latmax is not None:

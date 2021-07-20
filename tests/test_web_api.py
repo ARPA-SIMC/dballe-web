@@ -31,7 +31,7 @@ class WebAPIMixin(DballeWebMixin):
             url = url_for(f"api10.{name}")
 
         with self.test_client(time=time) as client:
-            return client.get(url, json=kwargs)
+            return client.post(url, json=kwargs)
 
 
 class TestEmpty(WebAPIMixin, TestCase):
@@ -224,3 +224,47 @@ class TestBasic(WebAPIMixin, TestCase):
             "2,12.34560,76.54320,temp,B01011,Hey Hey!!",
             "2,12.34560,76.54320,temp,B01012,500",
         ])
+
+    def test_set_filter(self):
+        self.maxDiff = None
+        self.app.db_session.init()
+
+        res = self.api_post("set_filter", filter={"datemin": "1945-04-25 00:00:00", "datemax": "1945-04-25 12:00:00"})
+        self.assertEqual(res.get_json(), {
+            "time": 100,
+            "explorer": {
+                "data_limit": self.app.db_session.data_limit,
+                "db_url": self.app.db_session.db_url,
+                "filter": {
+                    'ana_id': None,
+                    'datemax': "1945-04-25 12:00:00",
+                    'datemin': "1945-04-25 00:00:00",
+                    'level': None,
+                    'rep_memo': None,
+                    'trange': None,
+                    'var': None,
+                    'latmin': None,
+                    'latmax': None,
+                    'lonmin': None,
+                    'lonmax': None,
+                },
+                'filter_cmdline': "'datetimemin=1945-04-25 00:00:00' 'datetimemax=1945-04-25 12:00:00'",
+                'initialized': True,
+                'stations': [
+                    ['synop', 1, 12.3456, 76.5432, None],
+                    ['temp', 2, 12.3456, 76.5432, None]],
+                'stations_disabled': [],
+                'level': [[[10, 11, 15, 22], 'Layer from [10 11] to [15 22]']],
+                'trange': [[[20, 111, 222], '20 111 222']],
+                'rep_memo': ['synop', 'temp'],
+                'var': [
+                    ['B01011', 'B01011: SHIP OR MOBILE LAND STATION IDENTIFIER'],
+                    ['B01012', 'B01012: DIRECTION OF MOTION OF MOVING OBSERVING PLATFORM**'],
+                ],
+                'stats': {
+                    'count': 4,
+                    'datetime_min': '1945-04-25 08:00:00',
+                    'datetime_max': '1945-04-25 08:00:00',
+                },
+            },
+        })
