@@ -47,10 +47,10 @@ def start_flask(args):
             threaded=True)
 
     port = server.socket.getsockname()[1]
-    log.warning("Running on http://localhost:%d (Press CTRL+C to quit))", port)
+    log.warning("Running on http://localhost:%d/start/%s (Press CTRL+C to quit))", port, app.access_token)
     log.warning("Port forwarding command: ssh %s@%s -NL 5000:localhost:%d",
                 getpass.getuser(), socket.getfqdn(), port)
-    log.warning("Port forwarding URL: http://localhost:5000")
+    log.warning("Port forwarding URL: http://localhost:5000/start/%s", app.access_token)
     server.serve_forever()
 
 
