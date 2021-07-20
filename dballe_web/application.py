@@ -39,7 +39,7 @@ def create_app(db_url: str):
             # The start method should not be protected, as it's the entry point
             return
         auth_token = request.cookies.get("Auth-Token")
-        if auth_token != current_app.access_token:
+        if current_app.access_token is not None and auth_token != current_app.access_token:
             abort(403)
 
     @app.route("/")
