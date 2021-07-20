@@ -1,6 +1,5 @@
 from typing import TYPE_CHECKING
-import random
-import string
+import secrets
 from flask import Flask, render_template, redirect, abort, current_app, request
 from .session import Session
 
@@ -10,14 +9,11 @@ if TYPE_CHECKING:
 
 
 class Application(Flask):
-    access_token_chars: str = string.ascii_letters + string.digits
-
     def __init__(self, *args, **kw):
         super().__init__(*args, **kw)
         self.db: dballe.DB = None
         self.db_session: Session = None
-        rnd = random.SystemRandom()
-        self.access_token = ''.join(rnd.choices(self.access_token_chars, k=16))
+        self.access_token = secrets.token_urlsafe()
 
     def set_dballe_url(self, db_url: str):
         self.db_session = Session(db_url)
