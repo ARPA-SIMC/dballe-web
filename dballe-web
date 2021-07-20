@@ -12,10 +12,10 @@ try:
 except ModuleNotFoundError:
     coloredlogs = None
 
-try:
-    import gevent
-except ModuleNotFoundError:
-    gevent = None
+# try:
+#     import gevent
+# except ModuleNotFoundError:
+#     gevent = None
 
 
 VERSION = "0.2"
@@ -23,18 +23,30 @@ VERSION = "0.2"
 log = logging.getLogger("dballe-web")
 
 
-def start_gevent(args):
-    from gevent.pywsgi import WSGIServer
-    app = create_app(args.db)
-    log.info("Starting server on 127.0.0.1:%d", args.port)
-    http_server = WSGIServer(('127.0.0.1', args.port), app)
-    http_server.serve_forever()
+# def start_gevent(args):
+#     from gevent.pywsgi import WSGIServer
+#     app = create_app(args.db)
+#     log.info("Starting server on 127.0.0.1:%d", args.port)
+#     http_server = WSGIServer(('127.0.0.1', args.port), app)
+#     http_server.serve_forever()
 
 
 def start_flask(args):
+    from werkzeug import serving
     app = create_app(args.db)
-    log.info("Starting server on 127.0.0.1:%d", args.port)
-    app.run(host="127.0.0.1", port=args.port)
+
+    # If needed, we can pass a socket as 'fd'
+    # If needed, we can change server.sock to a socket we create, and set
+    #    server.server_address (see BaseWSGIServer in werkzeug/serving.py
+    server = serving.make_server(
+            host='127.0.0.1',
+            port=0 if args.port is None else int(args.port),
+            app=app,
+            threaded=True)
+
+    port = server.socket.getsockname()[1]
+    log.warning("Running on http://localhost:%d (Press CTRL+C to quit))", port)
+    server.serve_forever()
 
 
 def main():
@@ -44,8 +56,8 @@ def main():
                         help="verbose output")
     parser.add_argument("--debug", action="store_true",
                         help="verbose output")
-    parser.add_argument("--port", "--web-port", type=int, default=5000,
-                        help="listening port for web interface")
+    parser.add_argument("--port", "--web-port", type=str, default=None,
+                        help="listening port for web interface. Default: automatically allocate a free port")
     parser.add_argument("db", type=str, metavar="dballe_url", default=os.environ.get("DBA_DB"),
                         help="DB-All.e database to connect to")
     args = parser.parse_args()
@@ -70,10 +82,11 @@ def main():
     # print("dballe-web URL:", url)
     # webbrowser.open(url)
 
-    if gevent is None:
-        start_flask(args)
-    else:
-        start_gevent(args)
+    start_flask(args)
+    # if gevent is None:
+    #     start_flask(args)
+    # else:
+    #     start_gevent(args)
 
 
 if __name__ == "__main__":
