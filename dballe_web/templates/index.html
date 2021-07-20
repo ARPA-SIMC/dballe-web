@@ -2,7 +2,6 @@
 
 {% block head %}
 <style type="text/css">
-#map { height: 30em; }
 .marker-cluster-highlighted {
   background-color: rgba(181, 226, 140, 0.6);
 }
@@ -78,6 +77,9 @@ input.data_editor {
         <a data-toggle="tab" role="tab" aria-controls="tab-filter" class="nav-link active" id="tab-header-filter" href="#tab-filter">Explore</a>
       </li>
       <li class="nav-item">
+        <a data-toggle="tab" role="tab" aria-controls="tab-station" class="nav-link" id="tab-header-station" href="#tab-station">Station</a>
+      </li>
+      <li class="nav-item">
         <a data-toggle="tab" role="tab" aria-controls="tab-value" class="nav-link" id="tab-header-value" href="#tab-value">Value</a>
       </li>
       <li class="nav-item">
@@ -101,19 +103,21 @@ input.data_editor {
                 <div class="card-body">{% include "dballeweb-filter.html" %}</div>
               </div>
             </div>
-            <div class="col-lg">
-              <div class="card">
+            <div class="col-lg mh-100">
+              <div class="card h-100 mh-100">
                 <div class="card-header">Stations</div>
-                <div class="card-body" id="map">
-                </div>
+                <div class="card-body h-100" id="map"></div>
               </div>
             </div>
           </div> <!-- /div class="row" -->
 
-          <div class="card">
+          <div class="card mt-2">
             {% include "dballeweb-data.html" %}
           </div>
         </div> <!-- /div class="container-fluid" -->
+      </div>
+      <div role="tabpanel" aria-labelledby="tab-header-station" id="tab-station" class="tab-pane">
+        {% include "dballeweb-station.html" %}
       </div>
       <div role="tabpanel" aria-labelledby="tab-header-value" id="tab-value" class="tab-pane">
         {% include "dballeweb-value.html" %}

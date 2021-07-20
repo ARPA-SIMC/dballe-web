@@ -1,18 +1,6 @@
-<div class="card-header d-flex">
-  <ul class="nav nav-tabs card-header-tabs" role="tablist">
-    <li class="nav-item">
-      <a data-toggle="tab" role="tab" aria-controls="tab-data-station" class="nav-link" id="tab-header-data-station" href="#tab-data-station">Station data</a>
-    </li>
-    <li class="nav-item">
-      <a data-toggle="tab" role="tab" aria-controls="tab-data-data" class="nav-link active" id="tab-header-data-data" href="#tab-data-data">Data</a>
-    </li>
-  </ul>
-</div>
+<div class="card-header d-flex">Data</div>
 <div class="card-body">
   <div class="tab-content">
-    <div role="tabpanel" aria-labelledby="tab-header-data-station" id="tab-data-station" class="tab-pane">
-      {% include "dballeweb-station-data.html" %}
-    </div>
     <div role="tabpanel" aria-labelledby="tab-header-data-data" id="tab-data-data" class="tab-pane active">
       <table id="data" class="table table-hover table-sm">
         <thead>
