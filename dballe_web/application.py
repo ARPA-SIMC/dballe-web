@@ -1,5 +1,7 @@
-from typing import TYPE_CHECKING, Dict, Any
-from flask import Flask, render_template, jsonify, request, make_response, g
+from typing import TYPE_CHECKING
+import random
+import string
+from flask import Flask, render_template, redirect, abort, current_app, request
 from .session import Session
 
 
@@ -8,10 +10,14 @@ if TYPE_CHECKING:
 
 
 class Application(Flask):
+    access_token_chars: str = string.ascii_letters + string.digits
+
     def __init__(self, *args, **kw):
         super().__init__(*args, **kw)
         self.db: dballe.DB = None
         self.db_session: Session = None
+        rnd = random.SystemRandom()
+        self.access_token = ''.join(rnd.choices(self.access_token_chars, k=16))
 
     def set_dballe_url(self, db_url: str):
         self.db_session = Session(db_url)
@@ -26,30 +32,27 @@ def create_app(db_url: str):
     from .webapi import api
     app.register_blueprint(api)
 
+    @app.before_request
+    def check_access_token():
+        # TODO: all methods should be ratelimited
+        if request.endpoint == "start":
+            # The start method should not be protected, as it's the entry point
+            return
+        auth_token = request.cookies.get("Auth-Token")
+        if current_app.access_token is not None and auth_token != current_app.access_token:
+            abort(403)
+
     @app.route("/")
     def index():
         return render_template("index.html")
 
+    @app.route("/start/<token>")
+    def start(token: str):
+        if token != current_app.access_token:
+            abort(403)
+
+        response = redirect("/")
+        response.set_cookie("Auth-Token", token)
+        return response
+
     return app
-
-
-# Old code with automatic port allocation
-#
-# class DballeWeb:
-#     def __init__(self):
-#         self.db_url = options.db
-#         self.web_host = "localhost"
-#         self.web_port = options.web_port
-#
-#     def setup(self):
-#         # Set up web server on a free port
-#         self.application = Application(self.db_url)
-#
-#         if self.web_port is None:
-#             sockets = tornado.netutil.bind_sockets(0, '127.0.0.1')
-#             self.web_port = sockets[0].getsockname()[:2][1]
-#             server = tornado.httpserver.HTTPServer(self.application)
-#             server.add_sockets(sockets)
-#         else:
-#             server = tornado.httpserver.HTTPServer(self.application)
-#             server.listen(self.web_port)

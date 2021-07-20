@@ -33,6 +33,8 @@ log = logging.getLogger("dballe-web")
 
 def start_flask(args):
     from werkzeug import serving
+    import getpass
+    import socket
     app = create_app(args.db)
 
     # If needed, we can pass a socket as 'fd'
@@ -45,7 +47,18 @@ def start_flask(args):
             threaded=True)
 
     port = server.socket.getsockname()[1]
-    log.warning("Running on http://localhost:%d (Press CTRL+C to quit))", port)
+    if args.devel:
+        app.access_token = None
+        start_url = f"http://localhost:{port}"
+        forwarded_start_url = f"http://localhost:5000/"
+    else:
+        start_url = f"http://localhost:{port}/start/{app.access_token}"
+        forwarded_start_url = f"http://localhost:5000/start/{app.access_token}"
+
+    log.warning("Running on %s (Press CTRL+C to quit))", start_url)
+    log.warning("Port forwarding command: ssh %s@%s -NL 5000:localhost:%d",
+                getpass.getuser(), socket.getfqdn(), port)
+    log.warning("Port forwarding URL: %s", forwarded_start_url)
     server.serve_forever()
 
 
@@ -58,6 +71,9 @@ def main():
                         help="verbose output")
     parser.add_argument("--port", "--web-port", type=str, default=None,
                         help="listening port for web interface. Default: automatically allocate a free port")
+    parser.add_argument("--devel", action="store_true",
+                        help="development mode: disable access token checks to allow restarting dballe-web"
+                             " without needing to restart the browser session")
     parser.add_argument("db", type=str, metavar="dballe_url", default=os.environ.get("DBA_DB"),
                         help="DB-All.e database to connect to")
     args = parser.parse_args()
