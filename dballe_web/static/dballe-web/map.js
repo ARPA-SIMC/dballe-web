@@ -65,9 +65,6 @@ class Map
         // Track station changes
         this.stations = new Stations();
 
-        // Objects that are notified of user events
-        this.controllers = [];
-
         // Alternative icon styles
         this.IconSelected = this._make_alt_icon("selected");
         //this.IconHighlighted = this._make_alt_icon("highlighted");
@@ -90,10 +87,10 @@ class Map
         // Add the rectangle selection facility
         var selectfeature = this.map.boxSelect.enable();
         this.map.on("boxselecting", (e) => {
-            $.each(this.controllers, (idx, c) => { c.select_station_bounds(e.bounds, false); });
+            window.dballeweb.trigger_select_station_bounds(e.bounds, false);
         });
         this.map.on("boxselected", (e) => {
-            $.each(this.controllers, (idx, c) => { c.select_station_bounds(e.bounds, true); });
+            window.dballeweb.trigger_select_station_bounds(e.bounds, true);
         });
         this.needs_zoom_to_fit = true;
     }
@@ -140,8 +137,7 @@ class Map
             if (s.current)
                 s.marker.setIcon(new this.IconSelected());
             s.marker.on("click", evt => {
-                for (let c of this.controllers)
-                    c.select_station(evt.target.options.id);
+                window.dballeweb.trigger_select_station(evt.target.options.id);
             });
             layer.addLayer(s.marker);
         }

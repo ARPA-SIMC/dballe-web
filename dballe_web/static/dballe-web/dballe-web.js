@@ -202,6 +202,23 @@ class DballeWeb
         var data = await this.server.replace_data_attr(var_data, rec);
         this.attrs.update(var_data, data);
     }
+
+    trigger_select_station_bounds(bounds, finished)
+    {
+        let new_evt = new CustomEvent("select_station_bounds", {detail: {
+            bounds: bounds,
+            finished: finished,
+        }, bubbles: false});
+        document.dispatchEvent(new_evt);
+    }
+
+    trigger_select_station(info)
+    {
+        let new_evt = new CustomEvent("select_station", {detail: {
+            info: info,
+        }, bubbles: false});
+        document.dispatchEvent(new_evt);
+    }
 }
 
 window.dballeweb = $.extend(window.dballeweb || {}, {
