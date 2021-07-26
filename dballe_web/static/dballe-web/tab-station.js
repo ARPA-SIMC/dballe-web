@@ -2,7 +2,7 @@
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Strict_mode
 "use strict";
 
-class StationDataEditor extends window.dballeweb.Editor
+class StationValueEditor extends window.dballeweb.Editor
 {
     constructor(dballeweb, td, dballe_station, dballe_data)
     {
@@ -32,6 +32,9 @@ class StationDataEditor extends window.dballeweb.Editor
     }
 }
 
+/**
+ * Show station information
+ */
 class StationInfo
 {
     constructor(dballeweb)
@@ -56,7 +59,10 @@ class StationInfo
 
 }
 
-class StationData
+/**
+ * Show station values in an editable table
+ */
+class StationValues
 {
     constructor(dballeweb)
     {
@@ -69,7 +75,7 @@ class StationData
             let el = $(evt.target);
             if (idx == 1 && !el.data("dballeweb_editor"))
             {
-                new StationDataEditor(this.dballeweb, el, station, data);
+                new StationValueEditor(this.dballeweb, el, station, data);
             } else {
                 this.dballeweb.show_station_data_attrs(data, data.i).then();
             }
@@ -104,7 +110,7 @@ class StationTab
         this.dballeweb = dballeweb;
         this.body = document.getElementById("tab-station");
         this.station_info = new StationInfo(dballeweb);
-        this.station_data = new StationData(dballeweb);
+        this.station_data = new StationValues(dballeweb);
     }
 }
 
