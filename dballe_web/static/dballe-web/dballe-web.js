@@ -171,6 +171,9 @@ class DballeWeb
         this.data.update(data);
     }
 
+    /**
+     * Ask for new station data from the server, and trigger a signal when we have it
+     */
     async update_station_data(id_station)
     {
         console.debug("update_station_data", id_station);
