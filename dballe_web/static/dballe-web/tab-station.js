@@ -32,6 +32,30 @@ class StationDataEditor extends window.dballeweb.Editor
     }
 }
 
+class StationInfo
+{
+    constructor(dballeweb)
+    {
+        this.dballeweb = dballeweb;
+
+        document.addEventListener("station_data_updated", evt => {
+            const data = evt.detail.data;
+            console.debug("show_station_data data:", data);
+            this.update(data);
+        });
+    }
+
+    update(data)
+    {
+        const station = data.station;
+        $("#dballeweb-station-data-id").text(station.id);
+        $("#dballeweb-station-data-repmemo").text(station.rep_memo);
+        $("#dballeweb-station-data-coords").text(`${station.lat}, ${station.lon}`);
+        $("#dballeweb-station-data-ident").text(station.ident ? station.ident : "-");
+    }
+
+}
+
 class StationData
 {
     constructor(dballeweb)
@@ -63,12 +87,6 @@ class StationData
         const station = data.station;
         const rows = data.rows;
         this.tbody.empty();
-
-        $("#dballeweb-station-data-id").text(station.id);
-        $("#dballeweb-station-data-repmemo").text(station.rep_memo);
-        $("#dballeweb-station-data-coords").text(`${station.lat}, ${station.lon}`);
-        $("#dballeweb-station-data-ident").text(station.ident ? station.ident : "-");
-
         for (const row of rows)
         {
             let tr = $("<tr class='d-flex'>").data("dballe_data", row).data("dballe_station", station);
@@ -85,6 +103,7 @@ class StationTab
     {
         this.dballeweb = dballeweb;
         this.body = document.getElementById("tab-station");
+        this.station_info = new StationInfo(dballeweb);
         this.station_data = new StationData(dballeweb);
     }
 }
