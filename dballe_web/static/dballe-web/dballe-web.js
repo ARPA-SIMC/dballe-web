@@ -117,7 +117,7 @@ class DballeWeb
 
         document.addEventListener("data_selected", evt => {
             const data = evt.detail.data;
-            this.show_station_data(data.s).then();
+            this.update_station_data(data.s).then();
             this.show_data_attrs(data, data.i).then();
         });
     }
@@ -171,9 +171,9 @@ class DballeWeb
         this.data.update(data);
     }
 
-    async show_station_data(id_station)
+    async update_station_data(id_station)
     {
-        console.debug("show_station_data", id_station);
+        console.debug("update_station_data", id_station);
         var data = await this.server.get_station_data(id_station);
         this.trigger_station_data_updated(data);
     }
