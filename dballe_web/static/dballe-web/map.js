@@ -87,12 +87,29 @@ class Map
         // Add the rectangle selection facility
         var selectfeature = this.map.boxSelect.enable();
         this.map.on("boxselecting", (e) => {
-            window.dballeweb.trigger_select_station_bounds(e.bounds, false);
+            this.trigger_select_station_bounds(e.bounds, false);
         });
         this.map.on("boxselected", (e) => {
-            window.dballeweb.trigger_select_station_bounds(e.bounds, true);
+            this.trigger_select_station_bounds(e.bounds, true);
         });
         this.needs_zoom_to_fit = true;
+    }
+
+    trigger_select_station_bounds(bounds, finished)
+    {
+        let new_evt = new CustomEvent("map_select_station_bounds", {detail: {
+            bounds: bounds,
+            finished: finished,
+        }, bubbles: false});
+        document.dispatchEvent(new_evt);
+    }
+
+    trigger_select_station(info)
+    {
+        let new_evt = new CustomEvent("map_select_station", {detail: {
+            info: info,
+        }, bubbles: false});
+        document.dispatchEvent(new_evt);
     }
 
     _make_alt_icon(type)

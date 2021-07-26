@@ -164,12 +164,11 @@ class Data
             let data = $(evt.target.parentNode).data("dballe_data");
             let idx = evt.target.cellIndex;
             let el = $(evt.target);
+            this.trigger_data_selected(data);
             if (idx == 6 && !el.data("dballeweb_editor"))
             {
+                // TODO: convert into a signal
                 new DataEditor(this.dballeweb, el, data);
-            } else {
-                this.dballeweb.show_station_data(data.s).then();
-                this.dballeweb.show_data_attrs(data, data.i).then();
             }
         });
         this.data_limit = $("#data-limit");
@@ -178,6 +177,14 @@ class Data
             limit = limit == "unlimited" ? null : parseInt(limit);
             this.dballeweb.set_data_limit(limit).then();
         });
+    }
+
+    trigger_data_selected(data)
+    {
+        let new_evt = new CustomEvent("data_selected", {detail: {
+            data: data,
+        }, bubbles: false});
+        document.dispatchEvent(new_evt);
     }
 
     update(data)

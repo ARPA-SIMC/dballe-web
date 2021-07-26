@@ -25,10 +25,10 @@ class FilterFieldStation extends FilterField
         super(filters, "station");
         this.map = filters.dballeweb.map;
         this.field_value = this.container.find(".dballeweb-value");
-        document.addEventListener("select_station", evt => {
+        document.addEventListener("map_select_station", evt => {
             this.select_station(evt.detail.info);
         });
-        document.addEventListener("select_station_bounds", evt => {
+        document.addEventListener("map_select_station_bounds", evt => {
             this.select_station_bounds(evt.detail.bounds, evt.detail.finished);
         });
     }

@@ -51,6 +51,12 @@ input.data_editor {
       $("#tab-header-filter").tab("show");
       evt.preventDefault();
     });
+
+    document.addEventListener("data_selected", evt => {
+      const data = evt.detail.data;
+      window.dballeweb.show_station_data(data.s).then();
+      window.dballeweb.show_data_attrs(data, data.i).then();
+    });
   }
 
   async function async_main()
