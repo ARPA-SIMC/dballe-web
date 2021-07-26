@@ -112,8 +112,14 @@ class DballeWeb
         this.map = new window.dballeweb.Map("map", options);
         this.filters = new window.dballeweb.Filters(this);
         this.data = new window.dballeweb.Data(this);
-        this.station_data = new window.dballeweb.StationData(this);
         this.attrs = new window.dballeweb.Attrs(this);
+        this.tab_station = new window.dballeweb.StationTab(this);
+
+        document.addEventListener("data_selected", evt => {
+            const data = evt.detail.data;
+            this.show_station_data(data.s).then();
+            this.show_data_attrs(data, data.i).then();
+        });
     }
 
     async init()
@@ -148,7 +154,7 @@ class DballeWeb
     {
         console.debug("replace_station_data", rec);
         var data = await this.server.replace_station_data(rec);
-        this.station_data.update(data);
+        this.trigger_station_data_updated(data);
     }
 
     async replace_data(rec)
@@ -169,8 +175,15 @@ class DballeWeb
     {
         console.debug("show_station_data", id_station);
         var data = await this.server.get_station_data(id_station);
-        console.debug("show_station_data data:", data);
-        this.station_data.update(data);
+        this.trigger_station_data_updated(data);
+    }
+
+    trigger_station_data_updated(data)
+    {
+        let new_evt = new CustomEvent("station_data_updated", {detail: {
+            data: data,
+        }, bubbles: false});
+        document.dispatchEvent(new_evt);
     }
 
     async show_station_data_attrs(var_data, id)

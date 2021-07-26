@@ -154,7 +154,7 @@ class Map
             if (s.current)
                 s.marker.setIcon(new this.IconSelected());
             s.marker.on("click", evt => {
-                window.dballeweb.trigger_select_station(evt.target.options.id);
+                this.trigger_select_station(evt.target.options.id);
             });
             layer.addLayer(s.marker);
         }

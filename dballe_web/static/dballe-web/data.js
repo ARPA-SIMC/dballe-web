@@ -64,36 +64,6 @@ class Editor
     }
 }
 
-class StationDataEditor extends Editor
-{
-    constructor(dballeweb, td, dballe_station, dballe_data)
-    {
-        super(dballeweb, td, dballe_data);
-        this.dballe_station = dballe_station;
-    }
-
-    // Save the new value
-    commit()
-    {
-        var value = this.editor.val();
-
-        const rec = {
-            ana_id: this.dballe_station.id,
-            varcode: this.dballe_data.c,
-            vt: this.dballe_data.vt,
-        };
-        if (this.dballe_data.vt == "decimal")
-            rec.value = parseFloat(value)
-        else if (this.dballe_data.vt == "decimal")
-            rec.value = parseInt(value)
-        else
-            rec.value = value;
-
-        this.td.empty().text(value).removeData("dballeweb_editor");
-        this.dballeweb.replace_station_data(rec).then();
-    }
-}
-
 class AttrsEditor extends Editor
 {
     constructor(dballeweb, td, var_data, dballe_data)
@@ -212,47 +182,6 @@ class Data
     }
 }
 
-class StationData
-{
-    constructor(dballeweb)
-    {
-        this.dballeweb = dballeweb;
-        this.tbody = $("#station-data tbody");
-        this.tbody.on("click", "td", evt => {
-            const station = $(evt.target.parentNode).data("dballe_station");
-            const data = $(evt.target.parentNode).data("dballe_data");
-            const idx = evt.target.cellIndex;
-            let el = $(evt.target);
-            if (idx == 1 && !el.data("dballeweb_editor"))
-            {
-                new StationDataEditor(this.dballeweb, el, station, data);
-            } else {
-                this.dballeweb.show_station_data_attrs(data, data.i).then();
-            }
-        });
-    }
-
-    update(data)
-    {
-        const station = data.station;
-        const rows = data.rows;
-        this.tbody.empty();
-
-        $("#dballeweb-station-data-id").text(station.id);
-        $("#dballeweb-station-data-repmemo").text(station.rep_memo);
-        $("#dballeweb-station-data-coords").text(`${station.lat}, ${station.lon}`);
-        $("#dballeweb-station-data-ident").text(station.ident ? station.ident : "-");
-
-        for (const row of rows)
-        {
-            let tr = $("<tr class='d-flex'>").data("dballe_data", row).data("dballe_station", station);
-            tr.append($("<td class='col-4'>").text(row.c));
-            tr.append($("<td class='col-8'>").text(row.v));
-            this.tbody.append(tr);
-        }
-    }
-}
-
 class Attrs
 {
     constructor(dballeweb)
@@ -289,8 +218,8 @@ class Attrs
 
 window.dballeweb = $.extend(window.dballeweb || {}, {
     Data: Data,
-    StationData: StationData,
     Attrs: Attrs,
+    Editor: Editor,
 });
 
 })(jQuery);
