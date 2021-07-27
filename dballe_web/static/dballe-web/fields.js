@@ -23,7 +23,6 @@ class FilterFieldStation extends FilterField
     constructor(filters)
     {
         super(filters, "station");
-        this.map = filters.dballeweb.map;
         this.field_value = this.container.find(".dballeweb-value");
         document.addEventListener("map_select_station", evt => {
             this.select_station(evt.detail.info);
@@ -90,7 +89,6 @@ class FilterFieldStation extends FilterField
 
     update_explorer(explorer)
     {
-        this.map.update_explorer(explorer);
         if (explorer.filter.ana_id)
         {
             this._set_value([

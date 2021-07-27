@@ -105,12 +105,18 @@ class StationValues
 
 class StationTab
 {
-    constructor(dballeweb)
+    constructor(dballeweb, options)
     {
         this.dballeweb = dballeweb;
         this.body = document.getElementById("tab-station");
         this.station_info = new StationInfo(dballeweb);
         this.station_data = new StationValues(dballeweb);
+        this.map = new window.dballeweb.StationMap("tab-station-map", options);
+
+        this.tab_header = document.getElementById("tab-header-station");
+        $(this.tab_header).on("shown.bs.tab", evt => {
+            this.map.map.invalidateSize();
+        });
     }
 }
 

@@ -109,11 +109,11 @@ class DballeWeb
     {
         this.options = options;
         this.server = new window.dballeweb.Server();
-        this.map = new window.dballeweb.Map("map", options);
+        this.map = new window.dballeweb.ExplorerMap("map", options);
         this.filters = new window.dballeweb.Filters(this);
         this.data = new window.dballeweb.Data(this);
         this.attrs = new window.dballeweb.Attrs(this);
-        this.tab_station = new window.dballeweb.StationTab(this);
+        this.tab_station = new window.dballeweb.StationTab(this, options);
 
         document.addEventListener("data_selected", evt => {
             const data = evt.detail.data;
@@ -142,6 +142,7 @@ class DballeWeb
         this.data.update_explorer(explorer);
         $(".dballeweb-view-url").text(explorer.db_url);
         $(".dballeweb-view-filter-cmdline").text(explorer.filter_cmdline);
+        this.trigger_explorer_updated(explorer)
     }
 
     async update_data()
@@ -179,6 +180,14 @@ class DballeWeb
         console.debug("update_station_data", id_station);
         var data = await this.server.get_station_data(id_station);
         this.trigger_station_data_updated(data);
+    }
+
+    trigger_explorer_updated(explorer)
+    {
+        let new_evt = new CustomEvent("explorer_updated", {detail: {
+            explorer: explorer,
+        }, bubbles: false});
+        document.dispatchEvent(new_evt);
     }
 
     trigger_station_data_updated(data)
