@@ -112,8 +112,8 @@ class DballeWeb
         this.map = new window.dballeweb.ExplorerMap("map", options);
         this.filters = new window.dballeweb.Filters(this);
         this.data = new window.dballeweb.Data(this);
-        this.attrs = new window.dballeweb.Attrs(this);
         this.tab_station = new window.dballeweb.StationTab(this, options);
+        this.tab_value = new window.dballeweb.ValueTab(this, options);
 
         document.addEventListener("data_selected", evt => {
             const data = evt.detail.data;
@@ -198,12 +198,21 @@ class DballeWeb
         document.dispatchEvent(new_evt);
     }
 
+    trigger_value_updated(var_data, attrs)
+    {
+        let new_evt = new CustomEvent("value_updated", {detail: {
+            var_data: var_data,
+            attrs: attrs,
+        }, bubbles: false});
+        document.dispatchEvent(new_evt);
+    }
+
     async show_station_data_attrs(var_data, id)
     {
         console.debug("show_station_data_attrs", var_data, id);
         var data = await this.server.get_station_data_attrs(id);
         console.debug("show_station_data_attrs data:", data);
-        this.attrs.update(var_data, data);
+        this.trigger_value_updated(var_data, data);
     }
 
     async show_data_attrs(var_data, id)
@@ -211,21 +220,21 @@ class DballeWeb
         console.debug("show_data_attrs", var_data, id);
         var data = await this.server.get_data_attrs(id);
         console.debug("show_data_attrs data:", data);
-        this.attrs.update(var_data, data);
+        this.trigger_value_updated(var_data, data);
     }
 
     async replace_station_data_attr(var_data, rec)
     {
         console.debug("replace_station_data_attr", var_data, rec);
         var data = await this.server.replace_station_data_attr(var_data, rec);
-        this.attrs.update(var_data, data);
+        this.trigger_value_updated(var_data, data);
     }
 
     async replace_data_attr(var_data, rec)
     {
         console.debug("replace_data_attr", var_data, rec);
         var data = await this.server.replace_data_attr(var_data, rec);
-        this.attrs.update(var_data, data);
+        this.trigger_value_updated(var_data, data);
     }
 }
 

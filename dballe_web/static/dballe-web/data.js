@@ -196,6 +196,10 @@ class Attrs
             if (idx == 1 && !el.data("dballeweb_editor"))
                 new AttrsEditor(this.dballeweb, el, var_data, data);
         });
+
+        document.addEventListener("value_updated", evt => {
+            this.attrs.update(evt.detail.var_data, evt.detail.attrs);
+        });
     }
 
     update(var_data, data)
