@@ -198,16 +198,13 @@ class Attrs
         });
 
         document.addEventListener("value_updated", evt => {
-            this.attrs.update(evt.detail.var_data, evt.detail.attrs);
+            this.update(evt.detail.var_data, evt.detail.attrs);
         });
     }
 
     update(var_data, data)
     {
         console.debug("Attrs.update", var_data, data)
-        $("#dballeweb-attr-varcode").text(var_data.c);
-        $("#dballeweb-attr-value").text(var_data.v);
-
         this.tbody.empty();
         for (var i = 0; i < data.rows.length; ++i)
         {

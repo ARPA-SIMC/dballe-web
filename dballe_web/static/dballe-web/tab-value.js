@@ -14,6 +14,20 @@ class ValueTab
         // $(this.tab_header).on("shown.bs.tab", evt => {
         //     this.map.map.invalidateSize();
         // });
+
+        document.addEventListener("value_updated", evt => {
+            this.update_value(evt.detail.var_data, evt.detail.attrs);
+        });
+    }
+
+    update_value(var_data, attrs)
+    {
+        $("#dballeweb-attr-varcode").text(var_data.c);
+        $("#dballeweb-attr-value").text(var_data.v);
+        if (var_data.d === undefined)
+            $("#dballeweb-attr-vartype").text("Station value");
+        else
+            $("#dballeweb-attr-vartype").text("Measured value");
     }
 }
 
