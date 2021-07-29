@@ -22,12 +22,16 @@ class ValueTab
 
     update_value(var_data, attrs)
     {
+        // TODO: add station info
+
         $("#dballeweb-attr-varcode").text(var_data.c);
         $("#dballeweb-attr-value").text(var_data.v);
         if (var_data.d === undefined)
             $("#dballeweb-attr-vartype").text("Station value");
         else
             $("#dballeweb-attr-vartype").text("Measured value");
+
+        // TODO: add datetime, level, timerange
     }
 }
 

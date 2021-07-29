@@ -1,4 +1,15 @@
-<div class="card-header d-flex">Data</div>
+<div class="card-header d-flex">Data
+  <span class="ml-auto badge badge-pill badge-secondary">
+    <select id="data-limit" class="text-right">
+      <option value="20" class="m-0 p-0">20</option>
+      <option value="50" class="m-0 p-0">50</option>
+      <option value="100" class="m-0 p-0">100</option>
+      <option value="unlimited" class="m-0 p-0">unlimited</option>
+    </select>
+    /
+    <span id="data-count">-</span>
+  </span>
+</div>
 <div class="card-body">
   <div class="tab-content">
     <div role="tabpanel" aria-labelledby="tab-header-data-data" id="tab-data-data" class="tab-pane active">
