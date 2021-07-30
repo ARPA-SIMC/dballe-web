@@ -1,8 +1,10 @@
-import dballe
-from dballe import dbacsv
+# from __future__ import annotations
+import contextlib
 import datetime
 import shlex
 import logging
+import dballe
+from dballe import dbacsv
 
 log = logging.getLogger(__name__)
 
@@ -116,9 +118,19 @@ class Session:
         self.explorer = dballe.DBExplorer()
         self.initialized = False
 
+    @contextlib.contextmanager
+    def read_transaction(self):
+        with self.db.transaction() as tr:
+            yield tr
+
+    @contextlib.contextmanager
+    def write_transaction(self):
+        with self.db.transaction() as tr:
+            yield tr
+
     def _revalidate(self):
         try:
-            with self.db.transaction() as tr:
+            with self.read_transaction() as tr:
                 with self.explorer.rebuild() as updater:
                     updater.add_db(tr)
             self.current_future = None
@@ -173,10 +185,10 @@ class Session:
         Export the currently selected data to out.
         """
         if format in ("bufr", "crex"):
-            with self.db.transaction() as tr:
+            with self.read_transaction() as tr:
                 tr.export_to_file(self.filter.to_record(), format.upper(), out)
         elif format == "csv":
-            with self.db.transaction() as tr:
+            with self.read_transaction() as tr:
                 dbacsv.export(tr, self.filter.to_record(), out)
 
     def init(self):
@@ -203,7 +215,7 @@ class Session:
         if self.data_limit is not None:
             query["limit"] = self.data_limit
         res = []
-        with self.db.transaction() as tr:
+        with self.read_transaction() as tr:
             for rec in tr.query_data(query):
                 var = rec["variable"]
                 row = {
@@ -226,7 +238,7 @@ class Session:
         query = {"ana_id": id_station}
         station = None
         res = []
-        with self.db.transaction() as tr:
+        with self.read_transaction() as tr:
             for rec in tr.query_stations(query):
                 station = {
                     "id": rec["ana_id"],
@@ -250,7 +262,7 @@ class Session:
             return station, res
 
     def get_station_data_attrs(self, id):
-        with self.db.transaction() as tr:
+        with self.read_transaction() as tr:
             attrs = tr.attr_query_station(id)
         res = []
         for k, var in attrs.items():
@@ -265,7 +277,7 @@ class Session:
         return res
 
     def get_data_attrs(self, id):
-        with self.db.transaction() as tr:
+        with self.read_transaction() as tr:
             attrs = tr.attr_query_data(id)
         res = []
         for k, var in attrs.items():
@@ -288,7 +300,8 @@ class Session:
             r[rec["varcode"]] = int(rec["value"])
         else:
             r[rec["varcode"]] = rec["value"]
-        self.db.insert_station_data(r, can_replace=True, can_add_stations=False)
+        with self.write_transaction() as tr:
+            tr.insert_station_data(r, can_replace=True, can_add_stations=False)
         return self.get_station_data(rec["ana_id"])
 
     def replace_data(self, rec):
@@ -304,7 +317,8 @@ class Session:
             r[rec["varcode"]] = int(rec["value"])
         else:
             r[rec["varcode"]] = rec["value"]
-        self.db.insert_data(r, can_replace=True, can_add_stations=False)
+        with self.write_transaction() as tr:
+            tr.insert_data(r, can_replace=True, can_add_stations=False)
         return self.get_data()
 
     def replace_station_data_attr(self, var_data, rec):
@@ -316,7 +330,8 @@ class Session:
             r[rec["c"]] = int(rec["v"])
         else:
             r[rec["c"]] = rec["v"]
-        self.db.attr_insert_station(var_data["i"], r)
+        with self.write_transaction() as tr:
+            tr.attr_insert_station(var_data["i"], r)
         return self.get_station_data_attrs(var_data["i"])
 
     def replace_data_attr(self, var_data, rec):
@@ -328,7 +343,8 @@ class Session:
             r[rec["c"]] = int(rec["v"])
         else:
             r[rec["c"]] = rec["v"]
-        self.db.attr_insert_data(var_data["i"], r)
+        with self.write_transaction() as tr:
+            tr.attr_insert_data(var_data["i"], r)
         return self.get_data_attrs(var_data["i"])
 
     def set_data_limit(self, limit):
