@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING
 import secrets
 from flask import Flask, render_template, redirect, abort, current_app, request
+import werkzeug.serving
 from .session import Session
 
 
@@ -52,3 +53,7 @@ def create_app(db_url: str):
         return response
 
     return app
+
+
+class Server(werkzeug.serving.ThreadedWSGIServer):
+    pass
