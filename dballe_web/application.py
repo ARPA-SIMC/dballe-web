@@ -61,6 +61,10 @@ class StopServer(Exception):
 
 
 class Server(werkzeug.serving.ThreadedWSGIServer):
+    """
+    Customized http server that allows handling other kind of events in its
+    event loop
+    """
     if hasattr(selectors, 'PollSelector'):
         _ServerSelector = selectors.PollSelector
     else:
@@ -75,6 +79,8 @@ class Server(werkzeug.serving.ThreadedWSGIServer):
         try:
             with self._ServerSelector() as selector:
                 server_key = selector.register(self, selectors.EVENT_READ)
+
+                # Register custom events
                 other_events = {}
                 for fileobj, events, func in events:
                     key = selector.register(fileobj, events)
@@ -85,6 +91,7 @@ class Server(werkzeug.serving.ThreadedWSGIServer):
                         if key == server_key:
                             self._handle_request_noblock()
                         else:
+                            # Process custom events
                             try:
                                 func = other_events.get(key)
                                 if func is not None:

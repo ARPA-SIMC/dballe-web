@@ -16,12 +16,6 @@ try:
 except ModuleNotFoundError:
     coloredlogs = None
 
-# try:
-#     import gevent
-# except ModuleNotFoundError:
-#     gevent = None
-
-
 VERSION = "0.2"
 
 log = logging.getLogger("dballe-web")
