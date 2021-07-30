@@ -60,6 +60,32 @@ class StopServer(Exception):
     pass
 
 
+class WSGIRequestHandler(werkzeug.serving.WSGIRequestHandler):
+    # Subclass to remove the ANSI color codes that werkzeug sadly hardcodes in
+    # log lines
+    def log_request(self, code='-', size='-'):
+        msg = self.requestline
+        code = str(code)
+        level = 'info'
+
+        if code[0] == '1':    # 1xx - Informational
+            pass
+        elif code[0] == '2':    # 2xx - Success
+            pass
+        elif code == '304':   # 304 - Resource Not Modified
+            pass
+        elif code[0] == '3':  # 3xx - Redirection
+            pass
+        elif code == '404':   # 404 - Resource Not Found
+            level = 'warning'
+        elif code[0] == '4':  # 4xx - Client Error
+            level = 'warning'
+        else:                 # 5xx, or any other response
+            level = 'error'
+
+        self.log(level, '"%s" %s %s', msg, code, size)
+
+
 class Server(werkzeug.serving.ThreadedWSGIServer):
     """
     Customized http server that allows handling other kind of events in its
@@ -69,6 +95,10 @@ class Server(werkzeug.serving.ThreadedWSGIServer):
         _ServerSelector = selectors.PollSelector
     else:
         _ServerSelector = selectors.SelectSelector
+
+    def __init__(self, *args, **kw):
+        kw.setdefault("handler", WSGIRequestHandler)
+        super().__init__(*args, **kw)
 
     def serve_forever(self, events: Tuple[Tuple[IO, int, Callable[[int], None]]] = ()):
         """

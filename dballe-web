@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import webbrowser
 import selectors
+import datetime
 import argparse
 import logging
 import getpass
@@ -81,17 +82,67 @@ class CursesHandler(logging.Handler):
         self.window.idlok(True)
         self.window.leaveok(True)
 
+        # Screen attributes for the given log messages
+        # Default RGB values for these colors are set in the Palette configuration of the terminal
+        normal = curses.A_NORMAL
+        if curses.COLOR_PAIRS < 6:
+            self.log_attrs = {
+                logging.DEBUG: (normal, normal),
+                logging.INFO: (normal, normal),
+                logging.WARNING: (normal, normal),
+                logging.ERROR: (normal, normal),
+                logging.CRITICAL: (normal, normal),
+            }
+        else:
+            curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_BLACK)
+            curses.init_pair(2, curses.COLOR_GREEN, curses.COLOR_BLACK)
+            curses.init_pair(3, curses.COLOR_YELLOW, curses.COLOR_BLACK)
+            curses.init_pair(4, curses.COLOR_RED, curses.COLOR_BLACK)
+            curses.init_pair(5, curses.COLOR_WHITE, curses.COLOR_RED)
+
+            self.log_attrs = {
+                logging.DEBUG: (curses.color_pair(1) | curses.A_DIM, normal | curses.A_DIM),
+                logging.INFO: (curses.color_pair(2), normal),
+                logging.WARNING: (curses.color_pair(3), normal),
+                logging.ERROR: (curses.color_pair(4), normal),
+                logging.CRITICAL: (curses.color_pair(5), normal),
+            }
+
     def emit(self, record):
-        # TODO: colorize logs
         maxy, maxx = self.window.getmaxyx()
+        posy, posx = self.window.getyx()
+
+        if posy == maxy:
+            self.window.scroll()
+
         try:
-            msg = self.format(record)
-            # TODO: check cursor position before inserting a "\n", so we can
-            # extend to the right end of the window
-            self.window.addstr("\n" + msg[:maxx - 1])
+            # TODO: remove ANSI sequences from werkzeug logs
+            message = record.getMessage()
+            dt = datetime.datetime.fromtimestamp(record.created)
+
+            attr_head, attr_msg = self.log_attrs[record.levelno]
+
+            x = 0
+
+            def add(s: str, attr=0):
+                nonlocal x
+                self.window.addstr(posy, x, s, attr)
+                x += len(s)
+
+            add(dt.strftime("%Y-%m-%d %H:%M:%S"), attr_head)
+            x += 1
+            add(record.levelname[0], attr_head)
+            x += 1
+            add(message[:maxx - x], attr_msg)
+
+            if posy < maxy:
+                self.window.move(posy + 1, 0)
+
             self.window.refresh()
         except Exception:
-            self.handleError(record)
+            raise
+            # TODO: if a problem happens here, figure out how to log it / show it
+            # self.handleError(record)
 
 
 class TUI(DballeWeb):
@@ -119,17 +170,28 @@ class TUI(DballeWeb):
         # TODO: add a key to dump logs
 
     def tui_main(self, stdscr):
-        # TODO: show menu
+        # TODO: handle window resize
         maxy, maxx = stdscr.getmaxyx()
         self.stdscr = stdscr
         self.stdscr.timeout(0)
         curses.curs_set(0)
+
+        # External border
         self.stdscr.border()
+
+        # Horizontal separator line
         self.stdscr.addch(4, 0, curses.ACS_LTEE)
         for x in range(1, maxx - 1):
             self.stdscr.addch(4, x, curses.ACS_HLINE)
         self.stdscr.addch(4, maxx - 1, curses.ACS_RTEE)
 
+        # TODO: show menu
+        # TODO: handle tracebacks from code
+        #        - turn log window into a class, with methods to add log lines
+        #          and also a method to add a traceback?
+        #        - make it scroll up/down with arrows?
+
+        # Setup logging to a window
         FORMAT = "%(asctime)-15s %(levelname)s %(name)s %(message)s"
         formatter = logging.Formatter(FORMAT, style='%')
 
@@ -142,11 +204,13 @@ class TUI(DballeWeb):
 
         self.server = self.start_flask()
 
+        # Header information
         stdscr.addstr(1, 1, f"Running on {self.start_url} (Press 'q' to quit))")
         stdscr.addstr(
                 2, 1,
                 f"Port forwarding command: ssh {getpass.getuser()}@{socket.getfqdn()} -NL 5000:localhost:{self.port}")
         stdscr.addstr(3, 1, f"Port forwarding URL: {self.forwarded_start_url}")
+
         stdscr.refresh()
 
         self.server.serve_forever(events=(
