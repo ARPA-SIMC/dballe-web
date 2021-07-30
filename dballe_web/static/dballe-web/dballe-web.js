@@ -120,6 +120,22 @@ class DballeWeb
             this.update_station_data(data.s).then();
             this.show_data_attrs(data, data.i).then();
         });
+
+        document.addEventListener("keydown", evt => {
+            if (evt.altKey)
+            {
+                if (evt.key == 'x') {
+                    $("#tab-header-filter").tab("show");
+                    evt.preventDefault();
+                } else if (evt.key == 's') {
+                    $("#tab-header-station").tab("show");
+                    evt.preventDefault();
+                } else if (evt.key == 'v') {
+                    $("#tab-header-value").tab("show");
+                    evt.preventDefault();
+                }
+            }
+        });
     }
 
     async init()
