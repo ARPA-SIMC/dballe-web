@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Tuple, Callable, IO
+import selectors
 import secrets
 from flask import Flask, render_template, redirect, abort, current_app, request
 import werkzeug.serving
@@ -55,5 +56,48 @@ def create_app(db_url: str):
     return app
 
 
-class Server(werkzeug.serving.ThreadedWSGIServer):
+class StopServer(Exception):
     pass
+
+
+class Server(werkzeug.serving.ThreadedWSGIServer):
+    if hasattr(selectors, 'PollSelector'):
+        _ServerSelector = selectors.PollSelector
+    else:
+        _ServerSelector = selectors.SelectSelector
+
+    def serve_forever(self, events: Tuple[Tuple[IO, int, Callable[[int], None]]] = ()):
+        """
+        Events can be a tuple of (fileobj, events, function) and can list
+        further functions to be called when events happen in the server event
+        loop
+        """
+        try:
+            # XXX: Consider using another file descriptor or connecting to the
+            # socket to wake this up instead of polling. Polling reduces our
+            # responsiveness to a shutdown request and wastes cpu at all other
+            # times.
+            with self._ServerSelector() as selector:
+                server_key = selector.register(self, selectors.EVENT_READ)
+                other_events = {}
+                for fileobj, events, func in events:
+                    key = selector.register(fileobj, events)
+                    other_events[key] = func
+
+                while True:
+                    for key, events in selector.select():
+                        if key == server_key:
+                            self._handle_request_noblock()
+                        else:
+                            try:
+                                func = other_events.get(key)
+                                if func is not None:
+                                    func(events)
+                            except StopServer:
+                                return
+
+                    self.service_actions()
+        except KeyboardInterrupt:
+            pass
+        finally:
+            self.server_close()
