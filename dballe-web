@@ -1,10 +1,15 @@
 #!/usr/bin/env python3
+import webbrowser
+import threading
 import argparse
 import logging
+import getpass
+import socket
+import locale
+import curses
+import signal
 import os
-# import os.path
 import sys
-# import webbrowser
 from dballe_web.application import create_app
 
 try:
@@ -23,43 +28,153 @@ VERSION = "0.2"
 log = logging.getLogger("dballe-web")
 
 
-# def start_gevent(args):
-#     from gevent.pywsgi import WSGIServer
-#     app = create_app(args.db)
-#     log.info("Starting server on 127.0.0.1:%d", args.port)
-#     http_server = WSGIServer(('127.0.0.1', args.port), app)
-#     http_server.serve_forever()
+class DballeWeb:
+    def __init__(self, args):
+        self.args = args
+        self.start_url = None
+        self.port = None
+        self.forwarded_start_url = None
+
+        if args.debug:
+            self.log_level = logging.DEBUG
+        elif args.verbose:
+            self.log_level = logging.INFO
+        else:
+            self.log_level = logging.WARN
+
+    def start_flask(self):
+        from werkzeug import serving
+        app = create_app(self.args.db)
+
+        # If needed, we can pass a socket as 'fd'
+        # If needed, we can change server.sock to a socket we create, and set
+        #    server.server_address (see BaseWSGIServer in werkzeug/serving.py
+        server = serving.make_server(
+                host='127.0.0.1',
+                port=0 if self.args.port is None else int(self.args.port),
+                app=app,
+                threaded=True)
+
+        self.port = server.socket.getsockname()[1]
+        if self.args.devel:
+            app.access_token = None
+            self.start_url = f"http://localhost:{self.port}"
+            self.forwarded_start_url = f"http://localhost:5000/"
+        else:
+            self.start_url = f"http://localhost:{self.port}/start/{app.access_token}"
+            self.forwarded_start_url = f"http://localhost:5000/start/{app.access_token}"
+
+        return server
 
 
-def start_flask(args):
-    from werkzeug import serving
-    import getpass
-    import socket
-    app = create_app(args.db)
+class CLI(DballeWeb):
+    def start(self):
+        FORMAT = "%(asctime)-15s %(levelname)s %(name)s %(message)s"
 
-    # If needed, we can pass a socket as 'fd'
-    # If needed, we can change server.sock to a socket we create, and set
-    #    server.server_address (see BaseWSGIServer in werkzeug/serving.py
-    server = serving.make_server(
-            host='127.0.0.1',
-            port=0 if args.port is None else int(args.port),
-            app=app,
-            threaded=True)
+        if coloredlogs is not None:
+            coloredlogs.install(level=self.log_level, fmt=FORMAT, stream=sys.stderr)
+        else:
+            logging.basicConfig(level=self.log_level, stream=sys.stderr, format=FORMAT)
 
-    port = server.socket.getsockname()[1]
-    if args.devel:
-        app.access_token = None
-        start_url = f"http://localhost:{port}"
-        forwarded_start_url = f"http://localhost:5000/"
-    else:
-        start_url = f"http://localhost:{port}/start/{app.access_token}"
-        forwarded_start_url = f"http://localhost:5000/start/{app.access_token}"
+        self.server = self.start_flask()
 
-    log.warning("Running on %s (Press CTRL+C to quit))", start_url)
-    log.warning("Port forwarding command: ssh %s@%s -NL 5000:localhost:%d",
-                getpass.getuser(), socket.getfqdn(), port)
-    log.warning("Port forwarding URL: %s", forwarded_start_url)
-    server.serve_forever()
+        print(f" * Running on {self.start_url} (Press CTRL+C to quit)")
+        print(f" * Port forwarding command: ssh {getpass.getuser()}@{socket.getfqdn()} -NL 5000:localhost:{self.port}")
+        print(f" * Port forwarding URL: {self.forwarded_start_url}")
+
+        self.server.serve_forever()
+
+
+class CursesHandler(logging.Handler):
+    def __init__(self, window, level=logging.NOTSET):
+        super().__init__(level)
+        self.window = window
+        self.window.scrollok(True)
+        self.window.idlok(True)
+        self.window.leaveok(True)
+
+    def emit(self, record):
+        # TODO: colorize logs
+        maxy, maxx = self.window.getmaxyx()
+        try:
+            msg = self.format(record)
+            # TODO: check cursor position before inserting a "\n", so we can
+            # extend to the right end of the window
+            self.window.addstr("\n" + msg[:maxx - 1])
+            self.window.refresh()
+        except Exception:
+            self.handleError(record)
+
+
+class TUI(DballeWeb):
+    def __init__(self, args):
+        super().__init__(args)
+        self.command_thread = None
+        self.server = None
+        self.stdscr = None
+
+    def start(self):
+        curses.wrapper(self.tui_main)
+
+    def command_loop(self):
+        logging.getLogger().setLevel(self.log_level)
+
+        maxy, maxx = self.stdscr.getmaxyx()
+
+        while True:
+            # TODO: make getch non blocking
+            # TODO: select on 0 to check for chars with a timeout
+            # TODO: this is awful, though only used for KeyboardInterrupt
+            # TODO: monkey patch socketserver._ServerSelector()?
+            # TODO: or rewrite serve_forever, since it's just a simple select
+            #       loop calling self._handle_request_noblock() and
+            #       self.service_actions()?
+            # TODO: or just fork, write logging to stdout (in JSON?), then read
+            #       the child process' stdout and write its contents in a window?
+            # TODO: or just abandon TUI?
+            # TODO: or just quit with 'q', but we still need to quit on SIGTERM
+            key = self.stdscr.getch()
+            if key in (ord('q'), ord('Q')):
+                os.kill(os.getpid(), signal.SIGTERM)
+                break
+            elif key == ord('w'):
+                webbrowser.open(self.start_url)
+            elif key == ord('W'):
+                webbrowser.open(self.forwarded_start_url)
+
+            self.stdscr.addstr(0, maxx - 4, chr(key))
+            self.stdscr.refresh()
+
+    def tui_main(self, stdscr):
+        # TODO: show menu
+        # TODO: draw borders
+        self.stdscr = stdscr
+        curses.curs_set(0)
+
+        FORMAT = "%(asctime)-15s %(levelname)s %(name)s %(message)s"
+        formatter = logging.Formatter(FORMAT, style='%')
+
+        maxy, maxx = stdscr.getmaxyx()
+        log_height = maxy - 4
+        log_window = curses.newwin(log_height, maxx, maxy - log_height, 0)
+
+        handler = CursesHandler(log_window)
+        handler.setFormatter(formatter)
+        logging.getLogger().addHandler(handler)
+
+        self.server = self.start_flask()
+
+        stdscr.addstr(0, 0, f"Running on {self.start_url} (Press 'q' to quit))")
+        stdscr.addstr(
+                1, 0,
+                f"Port forwarding command: ssh {getpass.getuser()}@{socket.getfqdn()} -NL 5000:localhost:{self.port}")
+        stdscr.addstr(2, 0, f"Port forwarding URL: {self.forwarded_start_url}")
+        stdscr.refresh()
+
+        self.command_thread = threading.Thread(target=self.command_loop)
+        self.command_thread.start()
+
+        self.server.serve_forever()
 
 
 def main():
@@ -78,31 +193,13 @@ def main():
                         help="DB-All.e database to connect to")
     args = parser.parse_args()
 
-    if args.debug:
-        log_level = logging.DEBUG
-    elif args.verbose:
-        log_level = logging.INFO
+    locale.setlocale(locale.LC_ALL, '')
+
+    if False:
+        app = TUI(args)
     else:
-        log_level = logging.WARN
-
-    FORMAT = "%(asctime)-15s %(levelname)s %(name)s %(message)s"
-
-    if coloredlogs is not None:
-        coloredlogs.install(level=log_level, fmt=FORMAT, stream=sys.stderr)
-    else:
-        logging.basicConfig(level=log_level, stream=sys.stderr, format=FORMAT)
-
-    # app = DballeWeb()
-    # app.setup()
-    # url = "http://127.0.0.1:{}/".format(app.port)
-    # print("dballe-web URL:", url)
-    # webbrowser.open(url)
-
-    start_flask(args)
-    # if gevent is None:
-    #     start_flask(args)
-    # else:
-    #     start_gevent(args)
+        app = CLI(args)
+    app.start()
 
 
 if __name__ == "__main__":
