@@ -1,8 +1,9 @@
 # from __future__ import annotations
 import contextlib
+import threading
 import datetime
-import shlex
 import logging
+import shlex
 import dballe
 from dballe import dbacsv
 
@@ -113,6 +114,7 @@ class Session:
     def __init__(self, db_url):
         self.db_url = db_url
         self.db = dballe.DB.connect(self.db_url)
+        self.db_lock = threading.Lock()
         self.filter = Filter()
         self.data_limit = 20
         self.explorer = dballe.DBExplorer()
@@ -120,13 +122,15 @@ class Session:
 
     @contextlib.contextmanager
     def read_transaction(self):
-        with self.db.transaction() as tr:
-            yield tr
+        with self.db_lock:
+            with self.db.transaction() as tr:
+                yield tr
 
     @contextlib.contextmanager
     def write_transaction(self):
-        with self.db.transaction() as tr:
-            yield tr
+        with self.db_lock:
+            with self.db.transaction() as tr:
+                yield tr
 
     def _revalidate(self):
         try:
