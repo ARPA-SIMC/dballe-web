@@ -73,10 +73,6 @@ class Server(werkzeug.serving.ThreadedWSGIServer):
         loop
         """
         try:
-            # XXX: Consider using another file descriptor or connecting to the
-            # socket to wake this up instead of polling. Polling reduces our
-            # responsiveness to a shutdown request and wastes cpu at all other
-            # times.
             with self._ServerSelector() as selector:
                 server_key = selector.register(self, selectors.EVENT_READ)
                 other_events = {}
