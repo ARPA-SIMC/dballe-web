@@ -2,7 +2,6 @@
 
 {% block head %}
 <style type="text/css">
-#map { height: 30em; }
 .marker-cluster-highlighted {
   background-color: rgba(181, 226, 140, 0.6);
 }
@@ -45,7 +44,7 @@ input.data_editor {
   function main()
   {
     dballeweb = new window.dballeweb.DballeWeb({
-      resource_url: "{{ static_url('dballe-web/', include_version=False) }}",
+      resource_url: "{{ url_for('static', filename='dballe-web/') }}",
     });
 
     $("#jumbotron-goto-filter").click(evt => {
@@ -65,7 +64,7 @@ input.data_editor {
   });
 })(jQuery);
 </script>
-{% end %}
+{% endblock %}
 
 {% block body %}
 <div class="card">
@@ -75,10 +74,16 @@ input.data_editor {
         <a data-toggle="tab" role="tab" aria-controls="tab-splash" class="nav-link" id="tab-header-splash" href="#tab-splash">DB-All.e Web</a>
       </li>
       <li class="nav-item">
-        <a data-toggle="tab" role="tab" aria-controls="tab-filter" class="nav-link active" id="tab-header-filter" href="#tab-filter">Explore</a>
+        <a data-toggle="tab" role="tab" aria-controls="tab-filter" class="nav-link active" id="tab-header-filter" href="#tab-filter">E<u>x</u>plore</a>
       </li>
       <li class="nav-item">
-        <a data-toggle="tab" role="tab" aria-controls="tab-export"   class="nav-link" id="tab-header-export" data-toggle="tab" href="#tab-export">Export</a>
+        <a data-toggle="tab" role="tab" aria-controls="tab-station" class="nav-link" id="tab-header-station" href="#tab-station"><u>S</u>tation</a>
+      </li>
+      <li class="nav-item">
+        <a data-toggle="tab" role="tab" aria-controls="tab-value" class="nav-link" id="tab-header-value" href="#tab-value"><u>V</u>alue</a>
+      </li>
+      <li class="nav-item">
+        <a data-toggle="tab" role="tab" aria-controls="tab-export" class="nav-link" id="tab-header-export" data-toggle="tab" href="#tab-export">Export</a>
       </li>
     </ul>
   </div>
@@ -94,41 +99,28 @@ input.data_editor {
           <div class="row">
             <div class="col-sm-4">
               <div class="card">
-                <div class="card-header">
-                  <ul class="nav nav-tabs card-header-tabs" role="tablist">
-                    <li class="nav-item">
-                      <a data-toggle="tab" role="tab" aria-controls="tab-filter-filter" class="nav-link active" id="tab-header-filter-filter" href="#tab-filter-filter">Filter</a>
-                    </li>
-                    <li class="nav-item">
-                      <a data-toggle="tab" role="tab" aria-controls="tab-filter-attrs" class="nav-link" id="tab-header-filter-attrs" href="#tab-filter-attrs">Attributes</a>
-                    </li>
-                  </ul>
-                </div>
-                <div class="card-body">
-                  <div class="tab-content">
-                    <div role="tabpanel" aria-labelledby="tab-header-filter-filter" id="tab-filter-filter" class="tab-pane active">
-                      {% include "dballeweb-filter.html" %}
-                    </div>
-                    <div role="tabpanel" aria-labelledby="tab-header-filter-attrs" id="tab-filter-attrs" class="tab-pane">
-                      {% include "dballeweb-attrs.html" %}
-                    </div>
-                  </div>
-                </div>
+                <div class="card-header">Filter</div>
+                <div class="card-body">{% include "dballeweb-filter.html" %}</div>
               </div>
             </div>
-            <div class="col-lg">
-              <div class="card">
+            <div class="col-lg mh-100">
+              <div class="card h-100 mh-100">
                 <div class="card-header">Stations</div>
-                <div class="card-body" id="map">
-                </div>
+                <div class="card-body h-100" id="map"></div>
               </div>
             </div>
           </div> <!-- /div class="row" -->
 
-          <div class="card">
+          <div class="card mt-2">
             {% include "dballeweb-data.html" %}
           </div>
         </div> <!-- /div class="container-fluid" -->
+      </div>
+      <div role="tabpanel" aria-labelledby="tab-header-station" id="tab-station" class="tab-pane">
+        {% include "dballeweb-station.html" %}
+      </div>
+      <div role="tabpanel" aria-labelledby="tab-header-value" id="tab-value" class="tab-pane">
+        {% include "dballeweb-value.html" %}
       </div>
       <div role="tabpanel" aria-labelledby="tab-header-export" id="tab-export" class="tab-pane">
         {% include "dballeweb-export.html" %}
@@ -136,4 +128,4 @@ input.data_editor {
     </div>
   </div>
 </div>
-{% end %}
+{% endblock %}

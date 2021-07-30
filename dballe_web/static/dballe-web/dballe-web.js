@@ -109,11 +109,33 @@ class DballeWeb
     {
         this.options = options;
         this.server = new window.dballeweb.Server();
-        this.map = new window.dballeweb.Map("map", options);
+        this.map = new window.dballeweb.ExplorerMap("map", options);
         this.filters = new window.dballeweb.Filters(this);
         this.data = new window.dballeweb.Data(this);
-        this.station_data = new window.dballeweb.StationData(this);
-        this.attrs = new window.dballeweb.Attrs(this);
+        this.tab_station = new window.dballeweb.StationTab(this, options);
+        this.tab_value = new window.dballeweb.ValueTab(this, options);
+
+        document.addEventListener("data_selected", evt => {
+            const data = evt.detail.data;
+            this.update_station_data(data.s).then();
+            this.show_data_attrs(data, data.i).then();
+        });
+
+        document.addEventListener("keydown", evt => {
+            if (evt.altKey)
+            {
+                if (evt.key == 'x') {
+                    $("#tab-header-filter").tab("show");
+                    evt.preventDefault();
+                } else if (evt.key == 's') {
+                    $("#tab-header-station").tab("show");
+                    evt.preventDefault();
+                } else if (evt.key == 'v') {
+                    $("#tab-header-value").tab("show");
+                    evt.preventDefault();
+                }
+            }
+        });
     }
 
     async init()
@@ -136,6 +158,7 @@ class DballeWeb
         this.data.update_explorer(explorer);
         $(".dballeweb-view-url").text(explorer.db_url);
         $(".dballeweb-view-filter-cmdline").text(explorer.filter_cmdline);
+        this.trigger_explorer_updated(explorer)
     }
 
     async update_data()
@@ -148,7 +171,7 @@ class DballeWeb
     {
         console.debug("replace_station_data", rec);
         var data = await this.server.replace_station_data(rec);
-        this.station_data.update(data);
+        this.trigger_station_data_updated(data);
     }
 
     async replace_data(rec)
@@ -165,12 +188,39 @@ class DballeWeb
         this.data.update(data);
     }
 
-    async show_station_data(id_station)
+    /**
+     * Ask for new station data from the server, and trigger a signal when we have it
+     */
+    async update_station_data(id_station)
     {
-        console.debug("show_station_data", id_station);
+        console.debug("update_station_data", id_station);
         var data = await this.server.get_station_data(id_station);
-        console.debug("show_station_data data:", data);
-        this.station_data.update(data);
+        this.trigger_station_data_updated(data);
+    }
+
+    trigger_explorer_updated(explorer)
+    {
+        let new_evt = new CustomEvent("explorer_updated", {detail: {
+            explorer: explorer,
+        }, bubbles: false});
+        document.dispatchEvent(new_evt);
+    }
+
+    trigger_station_data_updated(data)
+    {
+        let new_evt = new CustomEvent("station_data_updated", {detail: {
+            data: data,
+        }, bubbles: false});
+        document.dispatchEvent(new_evt);
+    }
+
+    trigger_value_updated(var_data, attrs)
+    {
+        let new_evt = new CustomEvent("value_updated", {detail: {
+            var_data: var_data,
+            attrs: attrs,
+        }, bubbles: false});
+        document.dispatchEvent(new_evt);
     }
 
     async show_station_data_attrs(var_data, id)
@@ -178,7 +228,7 @@ class DballeWeb
         console.debug("show_station_data_attrs", var_data, id);
         var data = await this.server.get_station_data_attrs(id);
         console.debug("show_station_data_attrs data:", data);
-        this.attrs.update(var_data, data);
+        this.trigger_value_updated(var_data, data);
     }
 
     async show_data_attrs(var_data, id)
@@ -186,21 +236,21 @@ class DballeWeb
         console.debug("show_data_attrs", var_data, id);
         var data = await this.server.get_data_attrs(id);
         console.debug("show_data_attrs data:", data);
-        this.attrs.update(var_data, data);
+        this.trigger_value_updated(var_data, data);
     }
 
     async replace_station_data_attr(var_data, rec)
     {
         console.debug("replace_station_data_attr", var_data, rec);
         var data = await this.server.replace_station_data_attr(var_data, rec);
-        this.attrs.update(var_data, data);
+        this.trigger_value_updated(var_data, data);
     }
 
     async replace_data_attr(var_data, rec)
     {
         console.debug("replace_data_attr", var_data, rec);
         var data = await this.server.replace_data_attr(var_data, rec);
-        this.attrs.update(var_data, data);
+        this.trigger_value_updated(var_data, data);
     }
 }
 

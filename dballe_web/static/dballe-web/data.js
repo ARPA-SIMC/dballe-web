@@ -64,36 +64,6 @@ class Editor
     }
 }
 
-class StationDataEditor extends Editor
-{
-    constructor(dballeweb, td, dballe_station, dballe_data)
-    {
-        super(dballeweb, td, dballe_data);
-        this.dballe_station = dballe_station;
-    }
-
-    // Save the new value
-    commit()
-    {
-        var value = this.editor.val();
-
-        const rec = {
-            ana_id: this.dballe_station.id,
-            varcode: this.dballe_data.c,
-            vt: this.dballe_data.vt,
-        };
-        if (this.dballe_data.vt == "decimal")
-            rec.value = parseFloat(value)
-        else if (this.dballe_data.vt == "decimal")
-            rec.value = parseInt(value)
-        else
-            rec.value = value;
-
-        this.td.empty().text(value).removeData("dballeweb_editor");
-        this.dballeweb.replace_station_data(rec).then();
-    }
-}
-
 class AttrsEditor extends Editor
 {
     constructor(dballeweb, td, var_data, dballe_data)
@@ -164,12 +134,11 @@ class Data
             let data = $(evt.target.parentNode).data("dballe_data");
             let idx = evt.target.cellIndex;
             let el = $(evt.target);
+            this.trigger_data_selected(data);
             if (idx == 6 && !el.data("dballeweb_editor"))
             {
+                // TODO: convert into a signal
                 new DataEditor(this.dballeweb, el, data);
-            } else {
-                this.dballeweb.show_station_data(data.s).then();
-                this.dballeweb.show_data_attrs(data, data.i).then();
             }
         });
         this.data_limit = $("#data-limit");
@@ -178,6 +147,14 @@ class Data
             limit = limit == "unlimited" ? null : parseInt(limit);
             this.dballeweb.set_data_limit(limit).then();
         });
+    }
+
+    trigger_data_selected(data)
+    {
+        let new_evt = new CustomEvent("data_selected", {detail: {
+            data: data,
+        }, bubbles: false});
+        document.dispatchEvent(new_evt);
     }
 
     update(data)
@@ -205,47 +182,6 @@ class Data
     }
 }
 
-class StationData
-{
-    constructor(dballeweb)
-    {
-        this.dballeweb = dballeweb;
-        this.tbody = $("#station-data tbody");
-        this.tbody.on("click", "td", evt => {
-            const station = $(evt.target.parentNode).data("dballe_station");
-            const data = $(evt.target.parentNode).data("dballe_data");
-            const idx = evt.target.cellIndex;
-            let el = $(evt.target);
-            if (idx == 1 && !el.data("dballeweb_editor"))
-            {
-                new StationDataEditor(this.dballeweb, el, station, data);
-            } else {
-                this.dballeweb.show_station_data_attrs(data, data.i).then();
-            }
-        });
-    }
-
-    update(data)
-    {
-        const station = data.station;
-        const rows = data.rows;
-        this.tbody.empty();
-
-        $("#dballeweb-station-data-id").text(station.id);
-        $("#dballeweb-station-data-repmemo").text(station.rep_memo);
-        $("#dballeweb-station-data-coords").text(`${station.lat}, ${station.lon}`);
-        $("#dballeweb-station-data-ident").text(station.ident ? station.ident : "-");
-
-        for (const row of rows)
-        {
-            let tr = $("<tr class='d-flex'>").data("dballe_data", row).data("dballe_station", station);
-            tr.append($("<td class='col-4'>").text(row.c));
-            tr.append($("<td class='col-8'>").text(row.v));
-            this.tbody.append(tr);
-        }
-    }
-}
-
 class Attrs
 {
     constructor(dballeweb)
@@ -260,14 +196,15 @@ class Attrs
             if (idx == 1 && !el.data("dballeweb_editor"))
                 new AttrsEditor(this.dballeweb, el, var_data, data);
         });
+
+        document.addEventListener("value_updated", evt => {
+            this.update(evt.detail.var_data, evt.detail.attrs);
+        });
     }
 
     update(var_data, data)
     {
         console.debug("Attrs.update", var_data, data)
-        $("#dballeweb-attr-varcode").text(var_data.c);
-        $("#dballeweb-attr-value").text(var_data.v);
-
         this.tbody.empty();
         for (var i = 0; i < data.rows.length; ++i)
         {
@@ -282,8 +219,8 @@ class Attrs
 
 window.dballeweb = $.extend(window.dballeweb || {}, {
     Data: Data,
-    StationData: StationData,
     Attrs: Attrs,
+    Editor: Editor,
 });
 
 })(jQuery);

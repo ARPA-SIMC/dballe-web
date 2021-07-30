@@ -23,9 +23,13 @@ class FilterFieldStation extends FilterField
     constructor(filters)
     {
         super(filters, "station");
-        this.map = filters.dballeweb.map;
-        this.map.controllers.push(this);
         this.field_value = this.container.find(".dballeweb-value");
+        document.addEventListener("map_select_station", evt => {
+            this.select_station(evt.detail.info);
+        });
+        document.addEventListener("map_select_station_bounds", evt => {
+            this.select_station_bounds(evt.detail.bounds, evt.detail.finished);
+        });
     }
 
     unset()
@@ -62,7 +66,8 @@ class FilterFieldStation extends FilterField
         ];
         this._set_value(filters);
         this.filters.update_filter().then();
-        this.filters.dballeweb.show_station_data(info.id).then();
+        // TODO: trigger events instead
+        this.filters.dballeweb.update_station_data(info.id).then();
     }
 
     select_station_bounds(bounds, finished)
@@ -84,7 +89,6 @@ class FilterFieldStation extends FilterField
 
     update_explorer(explorer)
     {
-        this.map.update_explorer(explorer);
         if (explorer.filter.ana_id)
         {
             this._set_value([
