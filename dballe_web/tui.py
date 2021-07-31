@@ -88,20 +88,30 @@ class LogWindow:
 
         self.window.refresh()
 
+    def write_exception(self, type, value, tb):
+        import traceback
+        maxy, maxx = self.window.getmaxyx()
+        attr_head, attr_msg = self.log_attrs[logging.ERROR]
+        lines = traceback.format_exception(type, value, tb)
+        lines = lines[-(maxy - 1):]
+        with self.make_space(len(lines)) as (first_line, last_line):
+            for idx, line in enumerate(lines):
+                self.window.insstr(first_line + idx, 0, line[:maxx], attr_head)
+        self.window.refresh()
+
 
 class CursesHandler(logging.Handler):
     def __init__(self, window: LogWindow, level=logging.NOTSET):
         super().__init__(level)
         self.window = window
+        self.last_logging_exception = None
 
     def emit(self, record):
         try:
             message = record.getMessage()
             self.window.write_log_entry(record, message)
         except Exception:
-            raise
-            # TODO: if a problem happens here, figure out how to log it / show it
-            # self.handleError(record)
+            self.window.write_exception(*sys.exc_info())
 
 
 class TUI(DballeWeb):
@@ -110,6 +120,7 @@ class TUI(DballeWeb):
         self.command_thread = None
         self.server = None
         self.stdscr = None
+        self.log_handler = None
 
     def start(self):
         logging.getLogger().setLevel(self.log_level)
@@ -117,6 +128,8 @@ class TUI(DballeWeb):
         curses.wrapper(self.tui_main)
 
     def on_stdin(self, events):
+        if self.log_handler.last_logging_exception is not None:
+            raise RuntimeError("Error in logging") from self.log_handler.last_logging_exception
         maxy, maxx = self.stdscr.getmaxyx()
 
         key = self.stdscr.getch()
@@ -129,10 +142,11 @@ class TUI(DballeWeb):
         elif key == curses.KEY_RESIZE:
             # TODO: handle resize
             pass
+        elif key == ord('!'):
+            raise RuntimeError("Simulated exception")
         # TODO: add a key to dump logs
 
     def tui_main(self, stdscr):
-        # TODO: handle window resize
         maxy, maxx = stdscr.getmaxyx()
         self.stdscr = stdscr
         self.stdscr.timeout(0)
@@ -159,9 +173,9 @@ class TUI(DballeWeb):
         log_height = maxy - 4
         log_window = LogWindow(curses.newwin(log_height - 2, maxx - 2, maxy - log_height + 1, 1))
 
-        handler = CursesHandler(log_window)
-        handler.setFormatter(formatter)
-        logging.getLogger().addHandler(handler)
+        self.log_handler = CursesHandler(log_window)
+        self.log_handler.setFormatter(formatter)
+        logging.getLogger().addHandler(self.log_handler)
 
         self.server = self.start_flask()
 

@@ -98,6 +98,7 @@ class Server(werkzeug.serving.ThreadedWSGIServer):
 
     def __init__(self, *args, **kw):
         kw.setdefault("handler", WSGIRequestHandler)
+        kw.setdefault("passthrough_errors", True)
         super().__init__(*args, **kw)
 
     def serve_forever(self, events: Tuple[Tuple[IO, int, Callable[[int], None]]] = ()):
