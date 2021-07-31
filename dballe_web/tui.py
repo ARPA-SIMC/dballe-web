@@ -142,8 +142,6 @@ class TUI(DballeWeb):
         elif key == curses.KEY_RESIZE:
             # TODO: handle resize
             pass
-        elif key == ord('!'):
-            raise RuntimeError("Simulated exception")
         # TODO: add a key to dump logs
 
     def tui_main(self, stdscr):
