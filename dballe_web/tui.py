@@ -1,4 +1,5 @@
 from typing import Tuple, ContextManager
+import collections
 import contextlib
 import webbrowser
 import selectors
@@ -8,8 +9,11 @@ import getpass
 import socket
 import curses
 import sys
+import os
 from .ui import DballeWeb
 from .application import StopServer
+
+log = logging.getLogger(__name__)
 
 
 class LogWindow:
@@ -105,13 +109,20 @@ class CursesHandler(logging.Handler):
         super().__init__(level)
         self.window = window
         self.last_logging_exception = None
+        self.history = collections.deque(maxlen=10000)
 
     def emit(self, record):
         try:
             message = record.getMessage()
             self.window.write_log_entry(record, message)
+            self.history.append(self.format(record))
         except Exception:
             self.window.write_exception(*sys.exc_info())
+
+    def dump(self, fname: str):
+        with open(fname, "wt") as fd:
+            for line in self.history:
+                print(line, file=fd)
 
 
 class TUI(DballeWeb):
@@ -139,10 +150,14 @@ class TUI(DballeWeb):
             webbrowser.open(self.start_url)
         elif key == ord('W'):
             webbrowser.open(self.forwarded_start_url)
+        elif key == ord('l'):
+            dt = datetime.datetime.now()
+            dump_file = os.path.expanduser(dt.strftime("~/%Y%m%d-%H%M%S-dballe-web.log"))
+            self.log_handler.dump(dump_file)
+            log.warning("Logs dumped to %s", dump_file)
         elif key == curses.KEY_RESIZE:
             # TODO: handle resize
             pass
-        # TODO: add a key to dump logs
 
     def tui_main(self, stdscr):
         maxy, maxx = stdscr.getmaxyx()
