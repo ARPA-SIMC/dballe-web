@@ -50,6 +50,12 @@ class LogWindow:
                 logging.CRITICAL: (curses.color_pair(5), normal),
             }
 
+    def resize(self, nlines, ncols, begin_x, begin_y):
+        self.window.resize(nlines, ncols)
+        self.window.refresh()
+        self.window.clear()
+        self.posy = 0
+
     @contextlib.contextmanager
     def make_space(self, lines: int) -> ContextManager[Tuple[int, int]]:
         """
@@ -124,6 +130,33 @@ class CursesHandler(logging.Handler):
             for line in self.history:
                 print(line, file=fd)
 
+    def resize(self, nlines, ncols, begin_x, begin_y):
+        self.window.resize(nlines, ncols, begin_x, begin_y)
+
+
+class CommandPipe:
+    def __init__(self, tui):
+        self.rpipe, self.wpipe = os.pipe2(os.O_NONBLOCK | os.O_CLOEXEC)
+        self.tui = tui
+
+    def fileno(self):
+        """
+        Mock a file object for passing to selectors
+        """
+        return self.rpipe
+
+    def on_event(self, events):
+        # Flush the read endpoint
+        while True:
+            try:
+                c = os.read(self.rpipe, 1)
+            except BlockingIOError:
+                break
+            self.tui.on_command(c.decode())
+
+    def post(self, cmd):
+        os.write(self.wpipe, cmd.encode("ascii"))
+
 
 class TUI(DballeWeb):
     def __init__(self, args):
@@ -132,6 +165,7 @@ class TUI(DballeWeb):
         self.server = None
         self.stdscr = None
         self.log_handler = None
+        self.command_pipe = CommandPipe(self)
 
     def start(self):
         logging.getLogger().setLevel(self.log_level)
@@ -155,15 +189,30 @@ class TUI(DballeWeb):
             dump_file = os.path.expanduser(dt.strftime("~/%Y%m%d-%H%M%S-dballe-web.log"))
             self.log_handler.dump(dump_file)
             log.warning("Logs dumped to %s", dump_file)
-        elif key == curses.KEY_RESIZE:
-            # TODO: handle resize
-            pass
+        # We don't get curses.KEY_RESIZE because in nonblocking mode, getch()
+        # cannot handle SIGWINCH
+        # elif key == curses.KEY_RESIZE:
+        #     self.on_terminal_resized()
 
-    def tui_main(self, stdscr):
-        maxy, maxx = stdscr.getmaxyx()
-        self.stdscr = stdscr
-        self.stdscr.timeout(0)
-        curses.curs_set(0)
+    def on_command(self, cmd: str):
+        if cmd == 'W':
+            self.on_terminal_resized()
+        else:
+            log.warning("Unknown command: %r", cmd)
+
+    def on_terminal_resized(self):
+        curses.endwin()
+        self.stdscr.refresh()
+        self.redraw()
+
+        maxy, maxx = self.stdscr.getmaxyx()
+        log_height = maxy - 4
+        self.log_handler.resize(log_height - 2, maxx - 2, maxy - log_height + 1, 1)
+
+    def redraw(self):
+        maxy, maxx = self.stdscr.getmaxyx()
+
+        self.stdscr.clear()
 
         # External border
         self.stdscr.border()
@@ -173,16 +222,32 @@ class TUI(DballeWeb):
         self.stdscr.hline(4, 1, curses.ACS_HLINE, maxx - 1)
         self.stdscr.addch(4, maxx - 1, curses.ACS_RTEE)
 
-        # TODO: show menu
-        # TODO: handle tracebacks from code
-        #        - turn log window into a class, with methods to add log lines
-        #          and also a method to add a traceback?
-        #        - make it scroll up/down with arrows?
+        # Header information
+        self.stdscr.addstr(1, 1, f"Running on {self.start_url} - 'q': quit, 'w': open browser, 'l': dump logs")
+        self.stdscr.addstr(
+                2, 1,
+                f"Port forwarding command: ssh {getpass.getuser()}@{socket.getfqdn()} -NL 5000:localhost:{self.port}")
+        self.stdscr.addstr(3, 1, f"Port forwarding URL: {self.forwarded_start_url}")
+
+        self.stdscr.refresh()
+
+    def tui_main(self, stdscr):
+        from signal import signal, SIGWINCH
+
+        def resize_handler(signum, frame):
+            self.command_pipe.post("W")
+
+        signal(SIGWINCH, resize_handler)
+
+        self.stdscr = stdscr
+        self.stdscr.timeout(0)
+        curses.curs_set(0)
 
         # Setup logging to a window
         FORMAT = "%(asctime)-15s %(levelname)s %(name)s %(message)s"
         formatter = logging.Formatter(FORMAT, style='%')
 
+        maxy, maxx = self.stdscr.getmaxyx()
         log_height = maxy - 4
         log_window = LogWindow(curses.newwin(log_height - 2, maxx - 2, maxy - log_height + 1, 1))
 
@@ -192,15 +257,9 @@ class TUI(DballeWeb):
 
         self.server = self.start_flask()
 
-        # Header information
-        stdscr.addstr(1, 1, f"Running on {self.start_url} (Press 'q' to quit))")
-        stdscr.addstr(
-                2, 1,
-                f"Port forwarding command: ssh {getpass.getuser()}@{socket.getfqdn()} -NL 5000:localhost:{self.port}")
-        stdscr.addstr(3, 1, f"Port forwarding URL: {self.forwarded_start_url}")
-
-        stdscr.refresh()
+        self.redraw()
 
         self.server.serve_forever(events=(
             (sys.stdin, selectors.EVENT_READ, self.on_stdin),
+            (self.command_pipe, selectors.EVENT_READ, self.command_pipe.on_event),
         ))
