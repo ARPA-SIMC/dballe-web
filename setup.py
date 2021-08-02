@@ -18,7 +18,7 @@ setup(
     author=['Enrico Zini'],
     author_email=['enrico@enricozini.org'],
     url='https://github.com/ARPA-SIMC/dballe-web/',
-    requires=["tornado", "dballe"],
+    requires=["flask", "dballe"],
     license="http://www.gnu.org/licenses/gpl-3.0.html",
     packages=['dballe_web'],
     scripts=['dballe-web'],
