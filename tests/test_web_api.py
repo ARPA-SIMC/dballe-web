@@ -10,11 +10,12 @@ class WebAPIMixin(DballeWebMixin):
     def test_client(self, time=100):
         with mock.patch("time.time", return_value=time):
             with self.app.test_client() as client:
+                client.set_cookie("localhost", "Auth-Token", self.app.access_token)
                 yield client
 
     def api_export(self, fmt: str, time: int = 100, **kwargs):
         with self.app.app_context():
-            url = url_for(f"api10.export", format=fmt)
+            url = url_for("api10.export", format=fmt)
 
         with self.test_client(time=time) as client:
             return client.get(url, data=kwargs)
