@@ -3,8 +3,8 @@
 
 Summary: Graphical interface to DB-All.e databases
 Name: dballe-web
-Version: 0.2
-Release: 3
+Version: 0.3
+Release: 1
 License: GPL
 Group: Applications/Meteo
 Source0: https://github.com/arpa-simc/%{name}/archive/v%{version}-%{release}.tar.gz#/%{srcarchivename}.tar.gz
@@ -19,11 +19,11 @@ BuildRequires: python3-rpm-macros >= 3-23
 %endif
 
 BuildRequires: %{python3_vers}-devel
-BuildRequires: %{python3_vers}-tornado
+BuildRequires: %{python3_vers}-flask
 BuildRequires: %{python3_vers}-dballe
 BuildRequires: %{python3_vers}-setuptools
 Requires: %{python3_vers}-dballe
-Requires: %{python3_vers}-tornado
+Requires: %{python3_vers}-flask
 Requires: %{python3_vers}-numpy
 
 %description
@@ -68,6 +68,14 @@ Requires: %{python3_vers}-numpy
 %postun
 
 %changelog
+* Wed Sep  1 2021 Daniele Branchini <dbranchini@arpae.it> - 0.3-1
+- Web browser not launched by default (#13)
+- Text user interface with shortcuts for launching webbrowser (#13)
+- Secure support for running also via port forwarding (#13)
+- Uses Flask instead of Tornado
+- Main page split in 3 tabs: Explore, Station, Value, with keyboard shortcuts
+  to switch tabs
+
 * Mon Oct 28 2019 Daniele Branchini <dbranchini@arpae.it> - 0.2-3
 - bogus release to compile against new dballe
 
