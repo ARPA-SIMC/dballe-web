@@ -1,7 +1,8 @@
 [![Build Status](https://simc.arpae.it/moncic-ci/dballe-web/centos7.png)](https://simc.arpae.it/moncic-ci/dballe-web/)
-[![Build Status](https://simc.arpae.it/moncic-ci/dballe-web/centos8.png)](https://simc.arpae.it/moncic-ci/dballe-web/)
-[![Build Status](https://simc.arpae.it/moncic-ci/dballe-web/fedora32.png)](https://simc.arpae.it/moncic-ci/dballe-web/)
-[![Build Status](https://simc.arpae.it/moncic-ci/dballe-web/fedora34.png)](https://simc.arpae.it/moncic-ci/dballe-web/)
+[![Build Status](https://simc.arpae.it/moncic-ci/dballe-web/rocky8.png)](https://simc.arpae.it/moncic-ci/dballe-web/)
+[![Build Status](https://simc.arpae.it/moncic-ci/dballe-web/rocky9.png)](https://simc.arpae.it/moncic-ci/dballe-web/)
+[![Build Status](https://simc.arpae.it/moncic-ci/dballe-web/fedora36.png)](https://simc.arpae.it/moncic-ci/dballe-web/)
+[![Build Status](https://simc.arpae.it/moncic-ci/dballe-web/fedora38.png)](https://simc.arpae.it/moncic-ci/dballe-web/)
 [![Build Status](https://copr.fedorainfracloud.org/coprs/simc/stable/package/dballe-web/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/simc/stable/package/dballe-web/)
 
 DB-All.e-web
