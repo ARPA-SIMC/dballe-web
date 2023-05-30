@@ -7,7 +7,7 @@ from dballe_web.unittest import DballeWebMixin
 
 class WebAPIMixin(DballeWebMixin):
     @contextlib.contextmanager
-    def test_client(self, time=100):
+    def client(self, time=100):
         with mock.patch("time.time", return_value=time):
             with self.app.test_client() as client:
                 client.set_cookie("localhost", "Auth-Token", self.app.access_token)
@@ -17,21 +17,21 @@ class WebAPIMixin(DballeWebMixin):
         with self.app.app_context():
             url = url_for("api10.export", format=fmt)
 
-        with self.test_client(time=time) as client:
+        with self.client(time=time) as client:
             return client.get(url, data=kwargs)
 
     def api_get(self, name: str, time: int = 100, **kwargs):
         with self.app.app_context():
             url = url_for(f"api10.{name}")
 
-        with self.test_client(time=time) as client:
+        with self.client(time=time) as client:
             return client.get(url, data=kwargs)
 
     def api_post(self, name: str, time: int = 100, **kwargs):
         with self.app.app_context():
             url = url_for(f"api10.{name}")
 
-        with self.test_client(time=time) as client:
+        with self.client(time=time) as client:
             return client.post(url, json=kwargs)
 
 
