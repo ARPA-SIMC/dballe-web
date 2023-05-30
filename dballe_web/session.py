@@ -189,8 +189,10 @@ class Session:
         Export the currently selected data to out.
         """
         if format in ("bufr", "crex"):
+            exporter = dballe.Exporter(format.upper())
             with self.read_transaction() as tr:
-                tr.export_to_file(self.filter.to_record(), format.upper(), out)
+                for row in tr.query_messages(self.filter.to_record()):
+                    out.write(exporter.to_binary(row.message))
         elif format == "csv":
             with self.read_transaction() as tr:
                 dbacsv.export(tr, self.filter.to_record(), out)
