@@ -68,7 +68,7 @@ Requires: %{python3_vers}-numpy
 %postun
 
 %changelog
-* Mon Dec 16 2024 Emanuele Di Giacomo <edigiacomo@arpae.it> - 0.4
+* Mon Dec 16 2024 Emanuele Di Giacomo <edigiacomo@arpae.it> - 0.4-1
 - Fixed tests
 - Fixed a DeprecationWarning from dballe
 
