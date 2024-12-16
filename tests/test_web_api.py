@@ -1,6 +1,7 @@
 from unittest import mock, TestCase
 import contextlib
 import datetime
+import flask
 from flask import url_for
 from dballe_web.unittest import DballeWebMixin
 
@@ -10,7 +11,14 @@ class WebAPIMixin(DballeWebMixin):
     def client(self, time=100):
         with mock.patch("time.time", return_value=time):
             with self.app.test_client() as client:
-                client.set_cookie("localhost", "Auth-Token", self.app.access_token)
+                # MAJOR, MINOR, PATCH
+                flask_major_version = int(flask.__version__.split(".")[0])
+                # Starting from flask 3, FlaskClient.set_cookie is not backward compatible
+                if flask_major_version < 3:
+                    client.set_cookie("localhost", "Auth-Token", self.app.access_token)
+                else:
+                    client.set_cookie(key="Auth-Token", value=self.app.access_token, domain="localhost")
+
                 yield client
 
     def api_export(self, fmt: str, time: int = 100, **kwargs):
