@@ -7,7 +7,7 @@ import sys
 from dballe_web.tui import TUI
 from dballe_web.ui import CLI
 
-VERSION = "0.3"
+VERSION = "0.4"
 
 log = logging.getLogger("dballe-web")
 

@@ -3,7 +3,7 @@
 
 Summary: Graphical interface to DB-All.e databases
 Name: dballe-web
-Version: 0.3
+Version: 0.4
 Release: 1
 License: GPL
 Group: Applications/Meteo
@@ -68,6 +68,10 @@ Requires: %{python3_vers}-numpy
 %postun
 
 %changelog
+* Mon Dec 16 2024 Emanuele Di Giacomo <edigiacomo@arpae.it> - 0.4
+- Fixed tests
+- Fixed a DeprecationWarning from dballe
+
 * Wed Sep  1 2021 Daniele Branchini <dbranchini@arpae.it> - 0.3-1
 - Web browser not launched by default (#13)
 - Text user interface with shortcuts for launching webbrowser (#13)

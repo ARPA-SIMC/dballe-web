@@ -1,3 +1,8 @@
+New in version 0.4
+
+* Fixed tests
+* Fixed a DeprecationWarning from dballe
+
 New in version 0.3
 
 * Web browser not launched by default (#13)
